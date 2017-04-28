@@ -1,7 +1,6 @@
-import { Expression } from '@angular/compiler/src/output/output_ast';
 import { Dictionary } from 'typescript-collections'
 import { remove }     from 'lodash';
-
+import { Expression} from './expression'
 import { Modifier }   from './modifier';
 
 export enum EventType {

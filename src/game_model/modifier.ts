@@ -1,6 +1,6 @@
 import { Entity } from './entity';
 import { GameEvent } from './game-event';
-import { Trigger } from './trigger/trigger';
+import { Trigger } from './trigger';
 
 export class Modifier {
     name: string;
@@ -17,7 +17,7 @@ export class Modifier {
     triggers: Array<Trigger>;
     events: Array<GameEvent>;
 
-    constructor(data) {
+    constructor(data:any) {
         this.name = data.name || '';
         this.description = data.description || '';
         this.dispellable = data.dispellable || true;

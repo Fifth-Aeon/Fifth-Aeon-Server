@@ -4,6 +4,7 @@ import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 
 import HeroRouter from './routes/HeroRouter';
+import { playerQueue } from './matchmaking';
 
 
 // Creates and configures an ExpressJS web server.
