@@ -6,9 +6,6 @@ let debug = require('debug')('cleint');
 
 debug('Starting Console Client');
 
-
-let myId: string = Math.random().toString();
-
 messenger.addHandeler(MessageTypes.StartGame, (msg) => {
     console.log(msg);
 });
@@ -17,6 +14,6 @@ messenger.addHandeler(MessageTypes.StartGame, (msg) => {
 // bad, fix lattter
 setTimeout(function() {
     console.log('sending');
-    messenger.sendMessage(MessageTypes.JoinQueue, myId);
+    messenger.sendMessageToServer(MessageTypes.JoinQueue, (new Date()).toString());
 }, 500);
 

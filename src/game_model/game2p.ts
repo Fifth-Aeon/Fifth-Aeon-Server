@@ -7,7 +7,7 @@ import { Entity, Action } from './entity';
 
 
 
-export class Battle {
+export class Game2P {
     id: string;
     board: Board;
     isPlayerTurn: boolean;
