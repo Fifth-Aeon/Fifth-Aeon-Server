@@ -6,7 +6,7 @@ let debug = require('debug')('cleint');
 debug('Starting Console Client');
 
 messenger.addHandeler(MessageTypes.StartGame, (msg) => {
-    console.log(msg);
+    console.log('Got Start Game', msg);
 });
 
 

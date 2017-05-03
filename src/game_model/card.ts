@@ -1,5 +1,5 @@
 import { Entity, Action, ActionType } from './entity';
-import { Battle } from './battle';
+import { Game2P } from './game2p';
 import { Player } from './player';
 import { remove } from 'lodash';
 
@@ -18,13 +18,17 @@ export class Card {
         this.minionModifiers = minionModifiers;
     }
 
-    toSavable() {
+    public toString():string {
+        return `${this.name}: (${this.cost}) - [${this.minion.toString()}]`
+    }
+
+    public toSavable() {
         return {
             id: this.dataId || 'villager'
         }
     }
 
-    unpackData(data) {
+    public unpackData(data) {
         this.dataId = data.dataId || this.dataId;
         this.name = data.name || this.name;
         this.cost = data.cost || this.cost;
@@ -36,21 +40,23 @@ export class Card {
         this.minion.cardDataId = this.dataId;
     }
 
-    newInstance(): Card {
+    public newInstance(): Card {
         let clone =  new Card(this.name, this.cost, this.minion, this.minionModifiers);
         clone.unpackData(this);
         return clone;
     }
 
-    play(battle: Battle, row: number, col: number) {
+    public play(battle: Game2P, row: number, col: number) {
         this.owner.mana -= this.cost;
         battle.playMinion(this, true, row, col);
         remove(this.owner.hand, (card) => card === this);
     }
 
-    getActions(battle: Battle) {
+    public getActions(battle: Game2P) {
         let entities = battle.getCurrentPlayerEntities();
         let targets = [];
+        return [];
+        /*
         entities.forEach(entity => {
             battle.board.getNeighbors(entity.row, entity.col, true).forEach(neighbor => {
                 targets.push(neighbor);
@@ -63,5 +69,6 @@ export class Card {
         }).filter(action => {
             return battle.board.cells[action.row][action.col] === null;
         });
+        */
     }
 }

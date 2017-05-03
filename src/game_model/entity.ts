@@ -1,7 +1,7 @@
 import { Dictionary } from 'typescript-collections'
 
-import { Battle } from './battle';
-import { Sprite } from './sprite';
+import { Game2P } from './game2p';
+//import { Sprite } from './sprite';
 import { Card } from './card';
 import { Modifier } from './modifier';
 import { EventGroup, EventType } from './game-event';
@@ -33,64 +33,55 @@ function executeAttack() {
 export class Entity {
     // Board 
     cardDataId: string;
-    parent: Battle;
-    playerControlled: boolean;
-    row: number;
-    col: number;
-    sprite: Sprite;
-    id: number;
+    private parent: Game2P;
+    private owner: number;
+    private id: number;
 
     // Stats
-    life: number;
-    maxLife: number;
-    damage: number;
+    private life: number;
+    private maxLife: number;
+    private damage: number;
 
     // Actions
-    movesPerTurn: number;
-    moves: number;
-    moveSpeed: number;
-    attacksPerTurn: number;
-    attacks: number;
+    private exausted: boolean;
 
     // Mods
-    modifiers: Modifier[];
-    events: EventGroup;
+    private modifiers: Modifier[];
+    private events: EventGroup;
 
     constructor(damage: number, life: number) {
         this.id = Math.random();
         this.events = new EventGroup();
         this.modifiers = [];
-
-        this.sprite = new Sprite();
-        this.movesPerTurn = 1;
-        this.attacksPerTurn = 1;
-        this.moves = 0;
-        this.attacks = 0;
-        this.moveSpeed = 2;
-
+        this.exausted = true;
         this.life = life;
         this.damage = damage;
         this.maxLife = life;
     }
 
-    unpackData(data) {
+    public setParent(parent:Game2P) {
+        this.parent = parent;
+    }
+
+    public getOwner():number {
+        return this.owner;
+    }
+
+    public unpackData(data) {
         this.damage = data.damage;
         this.maxLife = data.maxLife;
         this.life = this.maxLife;
 
-        this.sprite = new Sprite();
-        this.sprite.row = data.sprite.row;
-        this.sprite.col = data.sprite.col;
     }
 
-    addModifier(mod:Modifier) {
+    public addModifier(mod:Modifier) {
         this.modifiers.push(mod);
         console.log('apply', mod, 'to', this);
         mod.apply(this);
         console.log('result', this);
     }
 
-    newInstance(cardForm: Card): Entity {
+    public newInstance(cardForm: Card): Entity {
         let clone = new Entity(this.damage, this.life);
         clone.cardDataId = cardForm.dataId;
         let props = [
@@ -103,61 +94,32 @@ export class Entity {
         clone.id = Math.random();
         return clone;
     }
-    refresh() {
-        this.moves = this.movesPerTurn;
-        this.attacks = this.attacksPerTurn;
+
+    public refresh() {
+        this.exausted = false;
+        this.life = this.maxLife;
     }
 
-    canMove() {
-        return this.moves > 0;
+    
+    public canActivate():boolean {
+        return this.exausted;
     }
 
-    canAttack() {
-        return this.attacks > 0;
-    }
-
-    getPossibleAcitons(): Array<Action> {
+    public getPossibleAcitons(): Array<Action> {
         let actions = [];
-        if (this.canMove()) {
-            let search = this.parent.board.breadthFirstSearch(this.playerControlled, this.row, this.col);
-            let moves = search.getReachable(this.moveSpeed).filter(
-                coord => this.parent.board.cells[coord.row][coord.col] === null
-            ).map(
-                coord => new Action(ActionType.move, this, coord.row, coord.col, executeMove)
-                );
-            actions = actions.concat(moves);
-        }
-        if (this.canAttack()) {
-            let neighbors = this.parent.board.getNeighbors(this.row, this.col, true);
-            let attacks = neighbors.filter(coord => {
-                let entity = this.parent.board.cells[coord.row][coord.col];
-                return entity !== null && entity.playerControlled !== this.playerControlled;
-            }).map(
-                coord => new Action(ActionType.attack, this, coord.row, coord.col, executeAttack)
-                );
-            actions = actions.concat(attacks);
+
+        if (this.canActivate()) {
+            
         }
         return actions;
     }
 
-    toString() {
-        return `<Entity ${this.id} (${this.row}, ${this.col}) [${this.damage}/${this.life}]>`;
+    public toString() {
+        return `${this.id} - (${this.damage}/${this.life})`;
     }
 
-    move(row: number, col: number) {
-        let board = this.parent.board;
-        board.moveCharacter(this.row, this.col, row, col);
-        this.moves--;
-        this.row = row;
-        this.col = col;
-    }
-
-    attack(row: number, col: number) {
-        let board = this.parent.board;
-        let target = board.cells[row][col];
-        if (target === null)
-            console.error('Errror, attacking null target from', this.toString());
-
+    
+    public fight(target: Entity) {
         // Trigger an attack event
         let damage = this.events.trigger(EventType.onAttack, this.events.makeParams({
             damage: this.damage,
@@ -166,24 +128,22 @@ export class Entity {
         })).getValue('damage');
 
         // Remove actions and deal damage
-        this.attacks--;
-        this.moves--;
         this.dealDamage(target, damage);
         target.dealDamage(this, target.damage);
     }
 
-    takeDamage(amount: number) {
+    public takeDamage(amount: number) {
         this.life -= amount;
         if (this.life <= 0) {
             this.die();
         }
     }
 
-    dealDamage(target: Entity, amount: number) {
+    public dealDamage(target: Entity, amount: number) {
         target.takeDamage(amount);
     }
 
-    die() {
-        this.parent.board.cells[this.row][this.col] = null;
+    public die() {
+        this.parent.removeEntity(this);
     }
 }

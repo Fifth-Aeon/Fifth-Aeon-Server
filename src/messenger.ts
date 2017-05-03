@@ -1,7 +1,4 @@
-import { Server } from 'net';
-import { Context } from 'vm';
 import { playerQueue } from './matchmaking'
-
 const WebSocket = require('ws');
 
 export const MessageTypes = {
@@ -22,14 +19,13 @@ export interface Message {
 const port = 2222;
 
 /**
- * Object used to communicate via websockets. Can be used by the client or server. 
+ * Abstract class used to communicate via websockets. Can be used by the client or server. 
  * 
  * @class Messenger
  */
 abstract class Messenger {
     protected handlers: Map<string, (Message) => void>;
     protected ws;
-    protected isServer: boolean;
     protected name: string;
     protected id: string;
     protected connections: Map<string, any>;
@@ -37,7 +33,6 @@ abstract class Messenger {
 
     constructor(isServer) {
         this.name = isServer ? 'Server' : 'Client';
-        this.isServer = isServer;
         this.connections = new Map<string, any>();
         this.handlers = new Map();
 
@@ -46,20 +41,15 @@ abstract class Messenger {
 
     protected makeMessageHandler(ws) {
         ws.on('message', (data, flags) => {
-            console.log('onMessage', data, flags);
             let message = JSON.parse(data) as Message;
-            console.log('Got a message', message);
-
             let cb = this.handlers.get(message.type);
             if (cb) {
                 cb(message);
             } else {
-                console.error('No handler for message type', message.type, 'raw:', data, 'parsed:', message.type, message.data);
+                console.error('No handler for message type', message.type);
             }
         });
     }
-
-
 
     protected makeMessage(messageType: string, data: string): string {
         return JSON.stringify({
@@ -84,6 +74,12 @@ abstract class Messenger {
 
 }
 
+/**
+ *  Version of the messenger built to be used by the server.
+ * 
+ * @class ServerMessenger
+ * @extends {Messenger}
+ */
 class ServerMessenger extends Messenger {
     constructor() {
         super(true);
@@ -124,12 +120,15 @@ class ServerMessenger extends Messenger {
     }
 }
 
+/**
+ * Version of the messenger appropriate for use by a (nodejs) client.
+ */
 class ClientMessenger extends Messenger {
 
     public sendMessageToServer(messageType: string, data: string) {
         this.sendMessage(messageType, data, this.ws);
     }
-
+ 
     constructor() {
         super(false);
 
