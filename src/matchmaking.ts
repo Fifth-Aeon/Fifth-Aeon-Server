@@ -1,7 +1,7 @@
 import { LinkedDictionary } from 'typescript-collections';
-import { getMessenger, MessageTypes, Message } from './messenger';
+import { getServerMessenger, MessageTypes, Message } from './messenger';
 import { state } from './state';
-const messenger = getMessenger(true);
+const messenger = getServerMessenger();
 
 class MatchQueue {
     private playerQueue = new LinkedDictionary<string, number>();

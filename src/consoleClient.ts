@@ -1,8 +1,7 @@
-import { getMessenger, MessageTypes, Message } from './messenger';
-const messenger = getMessenger(false);
+import { getClientMessenger, MessageTypes, Message } from './messenger';
+const messenger = getClientMessenger();
 
 let debug = require('debug')('cleint');
-
 
 debug('Starting Console Client');
 

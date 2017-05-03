@@ -1,8 +1,8 @@
 import { Game2P } from './game_model/game2p';
 import { Account } from './account';
-import { getMessenger, MessageTypes } from './messenger';
+import { getServerMessenger, MessageTypes } from './messenger';
 
-const messenger = getMessenger(true);
+const messenger = getServerMessenger();
 
 class ServerState {
     games: Map<string, Game2P> = new Map<string, Game2P>();
