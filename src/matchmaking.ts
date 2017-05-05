@@ -3,7 +3,7 @@ import { getServerMessenger, MessageTypes, Message } from './messenger';
 import { state } from './state';
 const messenger = getServerMessenger();
 
-class MatchQueue {
+class MatchQueue { 
     private playerQueue = new LinkedDictionary<string, number>();
 
     constructor() {

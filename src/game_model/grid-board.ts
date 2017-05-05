@@ -1,6 +1,7 @@
 import { Entity, Action } from './entity';
 import { Queue } from 'typescript-collections';
 
+/*
 export class BoardCoordinate {
     constructor(public row: number, public col: number) { }
 }
@@ -153,3 +154,4 @@ class SearchResult {
         });
     }
 }
+*/ 

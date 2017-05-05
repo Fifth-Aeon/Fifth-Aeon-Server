@@ -1,21 +1,29 @@
 import { Entity, Action, ActionType } from './entity';
+import { Resource } from './resource';
 import { Game2P } from './game2p';
 import { Player } from './player';
 import { remove } from 'lodash';
 
 export class Card {
-    cost: number;
-    minion: Entity;
-    owner: Player;
-    name: string;
-    dataId: string;
-    minionModifiers: Array<{ id: string, param: number }>;
+    protected cost: Resource;
+    protected minion: Entity;
+    protected entity = false;
+    protected owner: number;
+    protected owningPlayer: Player;
+    protected name: string;
+    protected id: string;
+    protected dataId: string; 
+    protected minionModifiers: Array<{ id: string, param: number }>;
 
-    constructor(name: string = 'nameless', cost: number = 1, minion: Entity, minionModifiers = []) {
+    constructor(name: string = 'nameless', cost: Resource = new Resource(), minionModifiers = []) {
         this.cost = cost;
-        this.minion = minion;
         this.name = name;
+        this.id = Math.random().toString()
         this.minionModifiers = minionModifiers;
+    }
+
+    public isEntiy(): boolean {
+        return this.entity;
     }
 
     public toString():string {
@@ -33,23 +41,18 @@ export class Card {
         this.name = data.name || this.name;
         this.cost = data.cost || this.cost;
         this.minionModifiers = data.minionModifiers || [];
-
-        this.minion = new Entity(1, 1);
-        if (data.minion)
-            this.minion.unpackData(data.minion);
         this.minion.cardDataId = this.dataId;
     }
 
     public newInstance(): Card {
-        let clone =  new Card(this.name, this.cost, this.minion, this.minionModifiers);
+        let clone =  new Card(this.name, this.cost, this.minionModifiers);
         clone.unpackData(this);
         return clone;
     }
 
-    public play(battle: Game2P, row: number, col: number) {
-        this.owner.mana -= this.cost;
-        battle.playMinion(this, true, row, col);
-        remove(this.owner.hand, (card) => card === this);
+    public play(battle: Game2P) {
+        //this.owner.mana -= this.cost;
+        remove(this.owningPlayer.hand, (card) => card === this);
     }
 
     public getActions(battle: Game2P) {

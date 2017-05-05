@@ -75,7 +75,7 @@ export class Player {
         if (this.hand.length >= maxCards)
             return;
         let drawn = sample(this.deck).newInstance();
-        drawn.owner = this;
+        //drawn.owner = this;
         this.hand.push(drawn);
     }
 }

@@ -5,6 +5,7 @@ import { Game2P } from './game2p';
 import { Card } from './card';
 import { Modifier } from './modifier';
 import { EventGroup, EventType } from './game-event';
+import { Resource } from './resource';
 
 export enum ActionType {
     move, attack, spell
@@ -30,12 +31,10 @@ function executeAttack() {
     this.actor.attack(this.row, this.col);
 }
 
-export class Entity {
+export class Entity extends Card {
     // Board 
     cardDataId: string;
     private parent: Game2P;
-    private owner: number;
-    private id: number;
 
     // Stats
     private life: number;
@@ -49,14 +48,14 @@ export class Entity {
     private modifiers: Modifier[];
     private events: EventGroup;
 
-    constructor(damage: number, life: number) {
-        this.id = Math.random();
+    constructor(name: string = 'nameles', cost: Resource = new Resource(),  minionModifiers = [], damage: number = 1, life: number = 1) {
+        super(name, cost)
         this.events = new EventGroup();
-        this.modifiers = [];
         this.exausted = true;
         this.life = life;
         this.damage = damage;
         this.maxLife = life;
+        this.entity = true;
     }
 
     public setParent(parent:Game2P) {
@@ -74,6 +73,11 @@ export class Entity {
 
     }
 
+    public play(game:Game2P) {
+        super.play(game);
+        game.playEntity(this, 0);
+    }
+
     public addModifier(mod:Modifier) {
         this.modifiers.push(mod);
         console.log('apply', mod, 'to', this);
@@ -81,9 +85,9 @@ export class Entity {
         console.log('result', this);
     }
 
-    public newInstance(cardForm: Card): Entity {
-        let clone = new Entity(this.damage, this.life);
-        clone.cardDataId = cardForm.dataId;
+    public newInstance(): Card {
+        let clone = new Entity(this.name, this.cost, this.minionModifiers, this.damage, this.life);
+        //clone.cardDataId = cardForm.dataId;
         let props = [
             'parent', 'sprite', 'playerControlled', 'row', 'col',
             'life', 'maxLife', 'damage',
@@ -91,7 +95,7 @@ export class Entity {
         props.forEach(prop => {
             clone[prop] = this[prop];
         });
-        clone.id = Math.random();
+        clone.id = Math.random().toString();
         return clone;
     }
 

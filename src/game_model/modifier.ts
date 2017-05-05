@@ -1,6 +1,5 @@
 import { Entity } from './entity';
 import { GameEvent } from './game-event';
-import { Trigger } from './trigger';
 
 export class Modifier {
     name: string;
@@ -14,7 +13,6 @@ export class Modifier {
     attacksPerTurn: number;
     movesPerTurn: number;
 
-    triggers: Array<Trigger>;
     events: Array<GameEvent>;
 
     constructor(data:any) {
@@ -28,25 +26,28 @@ export class Modifier {
         this.movesPerTurn = data.movesPerTurn || 0;
 
         this.events = [];
-        this.triggers = [new Trigger()];
     }
 
 
     apply(target: Entity) {
+        /*
         target.damage += this.damage;
         target.maxLife += this.maxLife;
         target.life += this.maxLife;
         target.movesPerTurn += this.movesPerTurn;
         target.attacksPerTurn += this.attacksPerTurn;
         target.events.addModifierEvents(this);
+        */
     }
 
     remove(target: Entity) {
+        /*
         target.damage -= this.damage;
         target.maxLife -= this.maxLife;
         target.life -= this.maxLife;
         target.movesPerTurn -= this.movesPerTurn;
         target.attacksPerTurn -= this.attacksPerTurn;
         target.events.removeModifierEvents(this);
+        */
     }
 }

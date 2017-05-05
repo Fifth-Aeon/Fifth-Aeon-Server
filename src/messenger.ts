@@ -1,12 +1,22 @@
 import { playerQueue } from './matchmaking'
-const WebSocket = require('ws');
+import * as WebSocket from 'ws';
+
 
 export const MessageTypes = {
-    JoinQueue: 'JoinQueue',
-    ExitQueue: 'ExitQueue',
-    InvalidJoinQueue: 'InvalidJoinQueue',
-    StartGame: 'StartGame',
-    Info: 'Info'
+    // General
+    Info: 'Info', // Used to send message out to clients (eg news)
+
+    // Queuing
+    JoinQueue: 'JoinQueue', // Used by a client to join the queue
+    ExitQueue: 'ExitQueue', // Used by a client to exit the queue
+    InvalidJoinQueue: 'InvalidJoinQueue', // Error sent to client, if they can't join queue
+    StartGame: 'StartGame', // Used by server to tell a client a game is ready
+    
+    // In Game
+    SyncState: 'SyncState', // Used by server to send cleint gamestate
+    Concede: 'Concede', // Used by client to leave the game, resulting in a loss
+    PlayerAction: 'PlayerAction', // Used by client to send a game action
+    GetResponce: 'GetResponce', // Used by server to ask client to respond to a game aciton
 }
 
 export interface Message {
@@ -25,7 +35,6 @@ const port = 2222;
  */
 abstract class Messenger {
     protected handlers: Map<string, (Message) => void>;
-    protected ws;
     protected name: string;
     protected id: string;
     protected connections: Map<string, any>;
@@ -51,23 +60,23 @@ abstract class Messenger {
         });
     }
 
-    protected makeMessage(messageType: string, data: string): string {
+    protected makeMessage(messageType: string, data: string | object): string {
         return JSON.stringify({
             type: messageType,
             data: data,
             source: this.id
         });
-    }
+    } 
 
 
-    public addHandeler(messageType: string, callback: (message: Message) => void, context?: any) {
+    public addHandeler(messageType, callback: (message: Message) => void, context?: any) {
         if (context) {
             callback = callback.bind(context);
         }
         this.handlers.set(messageType, callback);
     }
 
-    protected sendMessage(messageType: string, data: string, ws: any) {
+    protected sendMessage(messageType: string , data: string | object, ws: any) {
         ws.send(this.makeMessage(messageType, data));
     }
 
@@ -81,6 +90,8 @@ abstract class Messenger {
  * @extends {Messenger}
  */
 class ServerMessenger extends Messenger {
+    private ws: WebSocket.Server;
+
     constructor() {
         super(true);
         this.ws = new WebSocket.Server({
@@ -114,7 +125,7 @@ class ServerMessenger extends Messenger {
         });
     }
 
-    public sendMessageTo(messageType: string, data: string, target: string) {
+    public sendMessageTo(messageType: string, data: string | object, target: string) {
         console.log('sending to', target, this.connections.get(target));
         this.sendMessage(messageType, data, this.connections.get(target));
     }
@@ -124,17 +135,17 @@ class ServerMessenger extends Messenger {
  * Version of the messenger appropriate for use by a (nodejs) client.
  */
 class ClientMessenger extends Messenger {
+    private ws: WebSocket;
 
     public sendMessageToServer(messageType: string, data: string) {
+        console.log('sending', messageType);
         this.sendMessage(messageType, data, this.ws);
     }
- 
+
     constructor() {
         super(false);
 
-        this.ws = new WebSocket('ws://localhost:' + port, {
-            perMessageDeflate: false
-        });
+        this.ws = new WebSocket('ws://localhost:' + port);
         this.id = Math.random().toString();
         this.ws.on('open', () => {
             console.log(this.name + ':', 'Conneciton opened');

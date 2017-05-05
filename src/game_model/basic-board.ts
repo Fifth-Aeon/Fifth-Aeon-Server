@@ -13,7 +13,7 @@ export class Board {
     constructor(playerCount: number, spaceCount: number) {
         this.spaces = new Array(playerCount);
         for (let i = 0; i < this.spaces.length; i++) {
-            this.spaces[i] = new Array(spaceCount);
+            this.spaces[i] = [];
         }
     }
 
@@ -25,12 +25,15 @@ export class Board {
         let res = [];
         for (let i = 0; i < this.spaces.length; i++) {
             for (let j = 0; j < this.spaces[i].length; j++) {
-                if (this.spaces[i][j] !== null)
-                    res.push(this.spaces[i][j]);
+                res.push(this.spaces[i][j]);
             }
         }
         return res;
     } 
+
+    public getPlayerEntities(playerNumber: number) {
+        return this.spaces[playerNumber];
+    }
 
     public removeEntity(entity:Entity) {
         for (let i = 0; i < this.spaces.length; i++) {

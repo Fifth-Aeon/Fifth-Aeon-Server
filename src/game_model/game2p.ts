@@ -4,20 +4,23 @@ import { Player, CardRecord } from './player';
 import { Card } from './card';
 import { Modifier } from './modifier';
 import { Entity, Action } from './entity';
-
-
+import { GameFormat } from './gameFormat';
 
 export class Game2P {
     public id: string;
     private board: Board;
     private turn: number;
+    private turnNum: number;
     private players: Player[];
     private modifierLibrary: Dictionary<string, Modifier>;
+    private format:GameFormat;
 
     constructor() {
+        this.format = new GameFormat();
         this.board = new Board(2, 12);
-        let card1 = new Card('testzor', 1, new Entity(1, 2));
-        let card2 = new Card('testfir', 4, new Entity(4, 4));
+        this.turnNum = 1;
+        let card1 = new Entity('test1');
+        let card2 = new Entity('test2');
         this.players = [new Player([
             new CardRecord(card1, 1),
             new CardRecord(card2, 1)
@@ -55,22 +58,34 @@ export class Game2P {
         }
         */
 
+    public getPlayerSummary(playerNum: number):string {
+        let hand = this.players[playerNum].hand.map(card => card.toString()).join("\n");
+        let playerBoard = this.board.getPlayerEntities(playerNum).map(entity => entity.toString()).join("\n");
+        let enemyBoard = this.board.getPlayerEntities(this.getOtherPlayerNumber(playerNum)).map(entity => entity.toString()).join("\n");
+
+        return `Turn ${this.turnNum}
+        
+        You have ${this.players[playerNum].hand.length} cards in hand.
+        ${hand}
+
+        Your Board
+        ${playerBoard}
+
+        Enemy Board
+        ${playerBoard}`
+    }
+
     public startGame() {
         this.turn = 0;
         this.players[this.turn].startTurn();
         this.getCurrentPlayerEntities().forEach(entity => entity.refresh());
     }
 
-    public playMinion(card: Card, pc: boolean, row: number, col: number) {
-        let minion = card.minion.newInstance(card);
-        card.minionModifiers.forEach(modRecord => {
-            let modifier = this.modifierLibrary.getValue(modRecord.id);
-            minion.addModifier(modifier);
-        })
-        this.addEntity(minion, pc, row, col);
+    public playEntity(ent:Entity, owner: number) {
+        this.addEntity(ent, owner);
     }
 
-    public addEntity(minion: Entity, pc: boolean, row: number, col: number) {
+    public addEntity(minion: Entity, owner: number) {
         minion.setParent(this);
         this.board.addEntity(minion);
     }
@@ -79,8 +94,13 @@ export class Game2P {
         return this.board.getAllEntities().filter(entity => entity.getOwner() == this.turn);
     }
 
+    public getOtherPlayerNumber(playerNum:number):number {
+        return (playerNum + 1) % this.players.length
+
+    }
+
     public nextTurn() {
-        this.turn = (this.turn + 1) % this.players.length;
+        this.turn = this.getOtherPlayerNumber(this.turn);
         let currentPlayerEntities = this.getCurrentPlayerEntities();
         currentPlayerEntities.forEach(entity => entity.refresh());
     }

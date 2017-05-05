@@ -8,8 +8,8 @@
     "test": "mocha --reporter spec --compilers ts:ts-node/register"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "William Ritson",
+  "license": "",
   "devDependencies": {
     "@types/body-parser": "0.0.33",
     "@types/chai": "^3.4.34",
