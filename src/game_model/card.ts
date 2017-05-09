@@ -2,18 +2,30 @@ import { Entity, Action, ActionType } from './entity';
 import { Resource } from './resource';
 import { Game2P } from './game2p';
 import { Player } from './player';
+import { Mechanic } from './mechanics';
 import { remove } from 'lodash';
+import { Storable } from './store';
+import { Collections, Type, Types } from './dataTypes'
 
-export class Card {
+export class Card implements Storable {
+    protected name: string;
+    protected id: string;
+    protected set: string;
+    protected rarity: number;
+    protected mechanics: any[];
+
     protected cost: Resource;
-    protected minion: Entity;
     protected entity = false;
     protected owner: number;
     protected owningPlayer: Player;
-    protected name: string;
-    protected id: string;
+    
     protected dataId: string; 
     protected minionModifiers: Array<{ id: string, param: number }>;
+
+    protected metadata = {
+        types: new Map<string, Type>(),
+        values: new Map<string, string>()
+    }
 
     constructor(name: string = 'nameless', cost: Resource = new Resource(), minionModifiers = []) {
         this.cost = cost;
@@ -22,18 +34,25 @@ export class Card {
         this.minionModifiers = minionModifiers;
     }
 
+    public getMetadata() {
+        this.metadata.types.set('mechanics', new Type(Types.list, Collections.mechanic));
+        return this.metadata;
+    }
+
     public isEntiy(): boolean {
         return this.entity;
     }
 
     public toString():string {
-        return `${this.name}: (${this.cost}) - [${this.minion.toString()}]`
+        return `${this.name}: (${this.cost})`
     }
 
-    public toSavable() {
-        return {
-            id: this.dataId || 'villager'
-        }
+    public toJson() {
+        return "";
+    }
+
+    public fromJson(raw:object) {
+        return null;
     }
 
     public unpackData(data) {
@@ -41,7 +60,6 @@ export class Card {
         this.name = data.name || this.name;
         this.cost = data.cost || this.cost;
         this.minionModifiers = data.minionModifiers || [];
-        this.minion.cardDataId = this.dataId;
     }
 
     public newInstance(): Card {
@@ -50,9 +68,8 @@ export class Card {
         return clone;
     }
 
-    public play(battle: Game2P) {
+    public play(game: Game2P) {
         //this.owner.mana -= this.cost;
-        remove(this.owningPlayer.hand, (card) => card === this);
     }
 
     public getActions(battle: Game2P) {
