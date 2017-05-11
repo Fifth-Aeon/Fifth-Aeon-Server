@@ -1,10 +1,17 @@
 import { Dictionary } from 'typescript-collections';
 import { Board } from './basic-board';
-import { Player, CardRecord } from './player';
+import { Player } from './player';
 import { Card } from './card';
 import { Modifier } from './modifier';
 import { Entity, Action } from './entity';
 import { GameFormat } from './gameFormat';
+import {CardGenerator} from './cardGenerator';
+
+let testGen = new CardGenerator();
+let recipie = {
+    rarityValues: [],
+    statsPerPoint: 1
+}
 
 export class Game2P {
     public id: string;
@@ -19,15 +26,10 @@ export class Game2P {
         this.format = new GameFormat();
         this.board = new Board(2, 12);
         this.turnNum = 1;
-        let card1 = new Entity('test1');
-        let card2 = new Entity('test2');
-        this.players = [new Player([
-            new CardRecord(card1, 1),
-            new CardRecord(card2, 1)
-        ]), new Player([
-            new CardRecord(card1, 1),
-            new CardRecord(card2, 1)
-        ])];
+        this.players = [
+            new Player(testGen.generateCards(recipie, 30)), 
+            new Player(testGen.generateCards(recipie, 30))
+        ];
     }
 
     public removeEntity(entity: Entity) {
@@ -59,14 +61,13 @@ export class Game2P {
         */
 
     public getPlayerSummary(playerNum: number):string {
-        let hand = this.players[playerNum].hand.map(card => card.toString()).join("\n");
+        let currPlayer = this.players[playerNum];
         let playerBoard = this.board.getPlayerEntities(playerNum).map(entity => entity.toString()).join("\n");
         let enemyBoard = this.board.getPlayerEntities(this.getOtherPlayerNumber(playerNum)).map(entity => entity.toString()).join("\n");
 
         return `Turn ${this.turnNum}
         
-        You have ${this.players[playerNum].hand.length} cards in hand.
-        ${hand}
+        ${currPlayer.sumerize()}
 
         Your Board
         ${playerBoard}

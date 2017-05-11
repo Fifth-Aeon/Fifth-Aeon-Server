@@ -126,7 +126,6 @@ class ServerMessenger extends Messenger {
     }
 
     public sendMessageTo(messageType: string, data: string | object, target: string) {
-        console.log('sending to', target, this.connections.get(target));
         this.sendMessage(messageType, data, this.connections.get(target));
     }
 }

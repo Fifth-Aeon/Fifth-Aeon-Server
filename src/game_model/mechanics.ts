@@ -26,6 +26,11 @@ export class Targeter {
     }
 }
 
+export enum Event {
+    onPlay
+
+}
+
 type effect = (targets:Entity | Player, params: Map<string, any>) => void;
 
 
@@ -33,7 +38,9 @@ export class Mechanic {
     protected params: Map<string, Type>;
     protected requiresEntity: boolean;
     protected targeter: Targeter;
-    protected effects: Array<effect>;
+    protected effects: {
+        play:Array<effect>
+    };
     protected builtParams: Map<string, any>;
 
     constructor(private type:targetType,) {
@@ -44,17 +51,22 @@ export class Mechanic {
         this.params.set(name, type);
     }
 
-    public trigger(game: Game2P) {
+    public onPlay(game: Game2P) {
         let targets = this.targeter.getTargets(game);
         targets.forEach(target => {
-            this.effects.forEach(effect => {
+            this.effects.play.forEach(effect => {
                 effect(target, this.builtParams);
             })
         })
     }
 
-    public addEffect(effect:effect) {
-        this.effects.push(effect);
+    public addEffect(event: Event, effect:effect) {
+        switch(event) {
+            case Event.onPlay:
+                this.effects.play.push(effect);
+                break;
+        }
+        
     }
 
     public setText(text:string) {

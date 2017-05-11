@@ -16,15 +16,22 @@ export class Player {
     private maxMana: number;
     private life: number;
 
+    public sumerize(): string {
+        let hand = this.hand.map(card => card.toString()).join("\n");
+
+
+        return `You have ${this.hand.length} cards in hand.
+            ${hand}`
+
+    }
+
     constructor(cards: Array<Card>) {
-
         this.hand = [];
-
         this.maxMana = 0;
         this.mana = 0;
     }
 
-    public takeDamage(damage:number) {
+    public takeDamage(damage: number) {
         this.life -= damage;
     }
 
