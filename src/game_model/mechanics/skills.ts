@@ -1,4 +1,4 @@
-import { Mechanic, targetType } from '../mechanics';
+import { Mechanic, targetType, Event } from '../mechanics';
 import { store } from '../store';
 import { Collections, Type, Types } from '../dataTypes';
 import { Player } from '../player';
@@ -11,7 +11,7 @@ import { Entity } from '../entity';
  */
 let damage = new Mechanic(targetType.all);
 damage.addParam('amount', new Type(Types.integer));
-damage.addEffect((target, params) => {
+damage.addEffect(Event.onPlay, (target, params) => {
     target.takeDamage(params.get('amount'));
 });
 damage.setText('Deal {amount} damage to {target}.');
@@ -22,7 +22,7 @@ store.registerMechanic('dealDamage', damage);
  */
 let draw = new Mechanic(targetType.player);
 draw.addParam('amount', new Type(Types.integer));
-draw.addEffect((target, params) => {
+draw.addEffect(Event.onPlay, (target, params) => {
     target = target as Player;
     target.drawCards(params.get('amount'));
 });
@@ -35,7 +35,7 @@ store.registerMechanic('drawCards', draw);
  */
 let kill = new Mechanic(targetType.entity);
 kill.addParam('amount', new Type(Types.integer));
-kill.addEffect((target, params) => {
+kill.addEffect(Event.onPlay, (target, params) => {
     target = target as Entity;
     target.die();
 });

@@ -9,6 +9,10 @@ export class Resource {
         this.types = types || new Map<string, number>();
     }
 
+    toString():string {
+        return this.numeric.toString();
+    }
+
     public meetsReq(req: Resource): boolean {
         let ok = true;
         req.types.forEach((necReq, req) => {

@@ -2,33 +2,40 @@ import { Card } from './card';
 import { sample, remove } from 'lodash';
 import { GameFormat } from './gameFormat';
 import { Game2P } from './game2p';
+import {Resource} from './resource';
 
-
-const maxCards = 6;
-const initialCards = 4;
-const finalMana = 9;
 
 export class Player {
     private format: GameFormat;
     private hand: Array<Card>;
     private deck: Array<Card>;
-    private mana: number;
-    private maxMana: number;
+    private resource: Resource;
     private life: number;
+    private hasPlayedResource: boolean;
+
+    constructor(cards: Array<Card>, initResource:Resource, life: number) {
+        this.deck = cards;
+        this.hand = [];
+        this.life = life;
+        this.resource = initResource; // Todo, fix by ref
+    }
 
     public sumerize(): string {
         let hand = this.hand.map(card => card.toString()).join("\n");
-
-
-        return `You have ${this.hand.length} cards in hand.
-            ${hand}`
-
+        return `You have ${this.hand.length} cards in hand. \n${hand}`
     }
 
-    constructor(cards: Array<Card>) {
-        this.hand = [];
-        this.maxMana = 0;
-        this.mana = 0;
+    public canPlayResource(): boolean {
+        return this.hasPlayedResource;
+    }
+
+    public playResource (played:Resource) {
+        this.resource.addRes(played);
+    }
+
+
+    public getLife() {
+        return this.life;
     }
 
     public takeDamage(damage: number) {
@@ -36,13 +43,12 @@ export class Player {
     }
 
     public startTurn() {
-        if (this.maxMana < finalMana)
-            this.maxMana++;
-        this.mana = this.maxMana;
+        this.resource
         this.drawCard();
     }
 
     public drawCards(quantity: number) {
+        console.log('draw', quantity);
         for (let i = 0; i < quantity; i++) {
             this.drawCard();
         }
@@ -58,9 +64,8 @@ export class Player {
     }
 
     public drawCard() {
-        if (this.hand.length >= maxCards)
-            return;
-        let drawn = sample(this.deck).newInstance();
+        let drawn = sample(this.deck);
+        remove(this.deck, drawn);
         //drawn.owner = this;
         this.hand.push(drawn);
     }

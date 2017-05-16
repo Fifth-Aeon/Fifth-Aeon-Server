@@ -17,6 +17,8 @@ export const MessageTypes = {
     Concede: 'Concede', // Used by client to leave the game, resulting in a loss
     PlayerAction: 'PlayerAction', // Used by client to send a game action
     GetResponce: 'GetResponce', // Used by server to ask client to respond to a game aciton
+    GameEvent: 'GameEvent',
+    GameAction: 'GameAction'
 }
 
 export interface Message {
@@ -68,7 +70,6 @@ abstract class Messenger {
         });
     } 
 
-
     public addHandeler(messageType, callback: (message: Message) => void, context?: any) {
         if (context) {
             callback = callback.bind(context);
@@ -78,9 +79,7 @@ abstract class Messenger {
 
     protected sendMessage(messageType: string , data: string | object, ws: any) {
         ws.send(this.makeMessage(messageType, data));
-    }
-
-
+    } 
 }
 
 /**
@@ -136,7 +135,7 @@ class ServerMessenger extends Messenger {
 class ClientMessenger extends Messenger {
     private ws: WebSocket;
 
-    public sendMessageToServer(messageType: string, data: string) {
+    public sendMessageToServer(messageType: string, data: string | object) {
         console.log('sending', messageType);
         this.sendMessage(messageType, data, this.ws);
     }

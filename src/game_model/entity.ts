@@ -33,7 +33,7 @@ function executeAttack() {
 
 export class Entity extends Card {
     // Board 
-    cardDataId: string;
+    private cardDataId: string;
     private parent: Game2P;
 
     // Stats
@@ -64,13 +64,6 @@ export class Entity extends Card {
 
     public getOwner():number {
         return this.owner;
-    }
-
-    public unpackData(data) {
-        this.damage = data.damage;
-        this.maxLife = data.maxLife;
-        this.life = this.maxLife;
-
     }
 
     public play(game:Game2P) {
@@ -119,7 +112,7 @@ export class Entity extends Card {
     }
 
     public toString() {
-        return `${this.id} - (${this.damage}/${this.life})`;
+        return `${this.name} (${this.cost}) - (${this.damage}/${this.life})`;
     }
 
     
