@@ -5,11 +5,12 @@ import * as WebSocket from 'ws';
 export const MessageTypes = {
     // General
     Info: 'Info', // Used to send message out to clients (eg news)
+    ClientError: 'ClientError', //  Client did something bad
 
     // Queuing
     JoinQueue: 'JoinQueue', // Used by a client to join the queue
     ExitQueue: 'ExitQueue', // Used by a client to exit the queue
-    InvalidJoinQueue: 'InvalidJoinQueue', // Error sent to client, if they can't join queue
+    
     StartGame: 'StartGame', // Used by server to tell a client a game is ready
     
     // In Game

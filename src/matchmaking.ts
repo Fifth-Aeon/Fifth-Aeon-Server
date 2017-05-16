@@ -42,7 +42,7 @@ class MatchQueue {
     private onJoinQueue(message: Message) {
         let playerToken: string = message.source;
         if (this.playerQueue.containsKey(playerToken)) {
-            messenger.sendMessageTo(MessageTypes.InvalidJoinQueue, "Already in queue.", playerToken);
+            messenger.sendMessageTo(MessageTypes.ClientError, "Already in queue.", playerToken);
             return;
         }
         this.playerQueue.setValue(playerToken, (new Date()).getTime());

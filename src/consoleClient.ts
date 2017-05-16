@@ -1,10 +1,10 @@
 import { getClientMessenger, MessageTypes, Message } from './messenger';
 import * as readline from 'readline';
 import * as debug from 'debug';
+
 const messenger = getClientMessenger();
 
 import { Game2P, GameAction, GameActionType, GameEvent } from './game_model/game2p';
-
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -21,15 +21,13 @@ class ConsoleClient {
 
     constructor() {
         this.registerCommand('join', this.join, ClientState.inLobby);
-        this.registerCommand('pass', this.pass);
-        this.registerCommand('resource', this.playResource);
+        this.registerCommand('pass', this.pass, ClientState.inGame);
+        this.registerCommand('resource', this.playResource, ClientState.inGame);
         this.registerCommand('help', this.help);
-        this.registerCommand('exit', (args) => {
-            process.exit()
-        });
-
+        this.registerCommand('exit', (args) => process.exit());
         messenger.addHandeler(MessageTypes.StartGame, this.startGame, this);
         messenger.addHandeler(MessageTypes.GameEvent, (msg) => this.handleGameEvent(msg.data), this);
+        messenger.addHandeler(MessageTypes.ClientError, (msg) => console.error('error', msg.data), this);
     }
 
     private handleGameEvent(event: GameEvent) {
@@ -67,9 +65,13 @@ class ConsoleClient {
 
 
     public prompt() {
-        rl.question('?:', (cmd: string) => {
+        rl.question('> ', (cmd: string) => {
             let parts = cmd.split(' ');
-            this.handlers.get(parts[0])(parts.slice(1))
+            let handler = this.handlers.get(parts[0]);
+            if (handler)
+                handler(parts.slice(1));
+            else
+                console.log('No such cmd as', parts[0]);
             this.prompt();
         });
     }
@@ -78,7 +80,8 @@ class ConsoleClient {
         this.handlers.set(cmd, (args) => {
             console.log(this.state, reqState);
             if (reqState != ClientState.any && this.state != reqState) {
-                console.error('Can\'t run command', cmd, 'in state', ClientState[this.state]);
+                console.error('Can\'t run command', cmd, 'in state', ClientState[this.state], 'needs', ClientState[reqState]);
+                return;
             }
             callback.bind(this)(args);
         });

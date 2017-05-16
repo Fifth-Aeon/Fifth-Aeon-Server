@@ -12,10 +12,13 @@ class ServerState {
 
     constructor() {
         messenger.addHandeler(MessageTypes.GameAction, (msg:Message) => {
-            let acc = this.accounts.get(msg.source),
-                id = acc.getGame();
+            let acc = this.accounts.get(msg.source);
+            if (acc == null) {
+                messenger.sendMessageTo(MessageTypes.ClientError, "Can't take game action. Your not logged in.", msg.source);
+            }
+            let id = acc.getGame();
             if (id === null) {
-                console.error('Got game action from user not in any game.');
+                messenger.sendMessageTo(MessageTypes.ClientError, "Can't take game action. Your not in a game.", msg.source);
                 return;
             }
             this.games.get(id).handleAction(msg);

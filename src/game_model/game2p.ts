@@ -24,7 +24,7 @@ export enum GameActionType {
 }
 
 export enum GameEventType {
-    attack, turnStart, phaseChange, mulligan
+    attack, turnStart, phaseChange, playResource, mulligan
 }
 
 export interface GameAction {
@@ -69,7 +69,9 @@ export class Game2P {
         let player = this.players[act.player];
         if (!this.isPlayerTurn(act.player) || !player.canPlayResource())
             return true;
-        player.playResource(new Resource());
+        let res = new Resource();
+        player.playResource(res);
+        this.addGameEvent(new GameEvent(GameEventType.playResource, { played: res }));
         return false;
     }
 
@@ -95,7 +97,7 @@ export class Game2P {
     }
 
     public handleAction(action: GameAction): GameEvent[] {
-        console.log('handle', action);
+        console.log('handle', GameActionType[action.type], action.params);
         let mark = this.events.length;
         let sig = this.actionHandelers.get(action.type)(action)
         return this.events.slice(mark);
