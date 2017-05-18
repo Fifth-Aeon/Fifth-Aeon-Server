@@ -24,7 +24,7 @@ export enum GameActionType {
 }
 
 export enum GameEventType {
-    attack, turnStart, phaseChange, playResource, mulligan
+    attack, turnStart, phaseChange, playResource, mulligan, playCard
 }
 
 export interface GameAction {
@@ -56,13 +56,30 @@ export class Game2P {
         this.turnNum = 1;
         this.actionHandelers = new Map<GameActionType, actionCb>();
         this.players = [
-            new Player(testGen.generateCards(recipe, 30), this.format.initalResource[0], this.format.initialLife[0]),
-            new Player(testGen.generateCards(recipe, 30), this.format.initalResource[1], this.format.initialLife[1])
+            new Player(testGen.generateCards(recipe, 30), 0, this.format.initalResource[0], this.format.initialLife[0]),
+            new Player(testGen.generateCards(recipe, 30), 1, this.format.initalResource[1], this.format.initialLife[1])
         ];
         this.events = [];
 
         this.addActionHandeler(GameActionType.pass, this.pass);
         this.addActionHandeler(GameActionType.playResource, this.playResource);
+        this.addActionHandeler(GameActionType.playCard, this.playCard);
+    }
+
+    private resolveCard(query: string, player: Player) {
+        return player.queryCard(query);
+    }
+
+    private playCard(act: GameAction): boolean {
+        let player = this.players[act.player];
+        if (!this.isPlayerTurn(act.player))
+            return false;
+        let card = this.resolveCard(act.params['toPlay'], player);
+        if (!card)
+            return false;
+        this.addGameEvent(new GameEvent(GameEventType.playCard, { played: card.toJson() }));
+        player.playCard(this, card);
+        return true;
     }
 
     private playResource(act: GameAction): boolean {
@@ -99,12 +116,15 @@ export class Game2P {
     public handleAction(action: GameAction): GameEvent[] {
         console.log('handle', GameActionType[action.type], action.params);
         let mark = this.events.length;
-        let sig = this.actionHandelers.get(action.type)(action)
+        let handeler = this.actionHandelers.get(action.type);
+        if (!handeler)
+            return [];
+        let sig = handeler(action);
         return this.events.slice(mark);
     }
 
     public isPlayerTurn(player: number) {
-        return this.turn == player;
+        return this.turn === player;
     }
 
     private addActionHandeler(type: GameActionType, cb: actionCb) {
@@ -149,7 +169,7 @@ ${playerBoard}`
     }
 
     public getCurrentPlayerEntities() {
-        return this.board.getAllEntities().filter(entity => entity.getOwner() == this.turn);
+        return this.board.getAllEntities().filter(entity => this.isPlayerTurn(entity.getOwner().getPlayerNumber()));
     }
 
     public getOtherPlayerNumber(playerNum: number): number {

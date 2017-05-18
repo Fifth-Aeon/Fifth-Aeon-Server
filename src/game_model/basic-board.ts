@@ -18,7 +18,7 @@ export class Board {
     }
 
     public addEntity(entity: Entity) {
-        this.spaces[entity.getOwner()].push(entity);
+        this.spaces[entity.getOwner().getPlayerNumber()].push(entity);
     }
 
     public getAllEntities(): Array<Entity> {

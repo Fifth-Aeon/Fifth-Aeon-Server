@@ -1,7 +1,6 @@
 import { Game2P } from './game_model/game2p';
 import { Account } from './account';
 import { getServerMessenger, Message, MessageTypes } from './messenger';
-
 import { GameServer} from './gameServer';
 
 const messenger = getServerMessenger();

@@ -2,6 +2,7 @@ import { Dictionary } from 'typescript-collections'
 
 import { Game2P } from './game2p';
 //import { Sprite } from './sprite';
+import { Player } from './player';
 import { Card } from './card';
 import { Modifier } from './modifier';
 import { EventGroup, EventType } from './game-event';
@@ -48,7 +49,7 @@ export class Entity extends Card {
     private modifiers: Modifier[];
     private events: EventGroup;
 
-    constructor(name: string = 'nameles', cost: Resource = new Resource(),  minionModifiers = [], damage: number = 1, life: number = 1) {
+    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers = [], damage: number = 1, life: number = 1) {
         super(name, cost)
         this.events = new EventGroup();
         this.exausted = true;
@@ -58,20 +59,20 @@ export class Entity extends Card {
         this.entity = true;
     }
 
-    public setParent(parent:Game2P) {
+    public setParent(parent: Game2P) {
         this.parent = parent;
     }
 
-    public getOwner():number {
+    public getOwner(): Player {
         return this.owner;
     }
 
-    public play(game:Game2P) {
+    public play(game: Game2P) {
         super.play(game);
         game.playEntity(this, 0);
     }
 
-    public addModifier(mod:Modifier) {
+    public addModifier(mod: Modifier) {
         this.modifiers.push(mod);
         console.log('apply', mod, 'to', this);
         mod.apply(this);
@@ -97,8 +98,8 @@ export class Entity extends Card {
         this.life = this.maxLife;
     }
 
-    
-    public canActivate():boolean {
+
+    public canActivate(): boolean {
         return this.exausted;
     }
 
@@ -106,7 +107,7 @@ export class Entity extends Card {
         let actions = [];
 
         if (this.canActivate()) {
-            
+
         }
         return actions;
     }
@@ -115,7 +116,7 @@ export class Entity extends Card {
         return `${this.name} (${this.cost}) - (${this.damage}/${this.life})`;
     }
 
-    
+
     public fight(target: Entity) {
         // Trigger an attack event
         let damage = this.events.trigger(EventType.onAttack, this.events.makeParams({

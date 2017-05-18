@@ -9,8 +9,7 @@ export const MessageTypes = {
 
     // Queuing
     JoinQueue: 'JoinQueue', // Used by a client to join the queue
-    ExitQueue: 'ExitQueue', // Used by a client to exit the queue
-    
+    ExitQueue: 'ExitQueue', // Used by a client to exit the queue   
     StartGame: 'StartGame', // Used by server to tell a client a game is ready
     
     // In Game
@@ -41,7 +40,6 @@ abstract class Messenger {
     protected name: string;
     protected id: string;
     protected connections: Map<string, any>;
-
 
     constructor(isServer) {
         this.name = isServer ? 'Server' : 'Client';
@@ -137,13 +135,11 @@ class ClientMessenger extends Messenger {
     private ws: WebSocket;
 
     public sendMessageToServer(messageType: string, data: string | object) {
-        console.log('sending', messageType);
         this.sendMessage(messageType, data, this.ws);
     }
 
     constructor() {
         super(false);
-
         this.ws = new WebSocket('ws://localhost:' + port);
         this.id = Math.random().toString();
         this.ws.on('open', () => {
@@ -151,9 +147,7 @@ class ClientMessenger extends Messenger {
         });
         this.makeMessageHandler(this.ws);
     }
-
 }
-
 
 const messengers = {
     client: null,
@@ -171,4 +165,3 @@ export function getClientMessenger(): ClientMessenger {
         messengers.client = new ClientMessenger();
     return messengers.client;
 }
-

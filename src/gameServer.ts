@@ -5,7 +5,6 @@ import { Game2P, GameAction } from './game_model/game2p';
 
 const messenger = getServerMessenger();
 
-
 export class GameServer {
     private playerAccounts: Account[] = [];
     private game: Game2P;
@@ -22,7 +21,6 @@ export class GameServer {
         return this.playerAccounts.findIndex((acc) => acc.token === playerToken);
     }
 
-
     public handleAction(msg: Message) {
         let action: GameAction = msg.data;
         action.player = this.playerNum(msg.source);
@@ -34,7 +32,6 @@ export class GameServer {
             })
         })
     }
-
 
     public start() {
         this.game.startGame();

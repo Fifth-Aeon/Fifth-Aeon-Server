@@ -2,7 +2,7 @@ import { Card } from './card';
 import { sample, remove } from 'lodash';
 import { GameFormat } from './gameFormat';
 import { Game2P } from './game2p';
-import {Resource} from './resource';
+import { Resource } from './resource';
 
 
 export class Player {
@@ -13,8 +13,9 @@ export class Player {
     private life: number;
     private hasPlayedResource: boolean;
 
-    constructor(cards: Array<Card>, initResource:Resource, life: number) {
+    constructor(cards: Array<Card>, private playerNumber: number, initResource: Resource, life: number) {
         this.deck = cards;
+        this.deck.forEach(card => card.setOwner(this));
         this.hand = [];
         this.life = life;
         this.resource = initResource; // Todo, fix by ref
@@ -25,11 +26,15 @@ export class Player {
         return `You have ${this.hand.length} cards in hand. \n${hand}`
     }
 
+    public getPlayerNumber() {
+        return this.playerNumber;
+    }
+
     public canPlayResource(): boolean {
         return this.hasPlayedResource;
     }
 
-    public playResource (played:Resource) {
+    public playResource(played: Resource) {
         this.resource.addRes(played);
     }
 
@@ -52,6 +57,17 @@ export class Player {
         for (let i = 0; i < quantity; i++) {
             this.drawCard();
         }
+    }
+
+    public queryCard(query: string): Card {
+        let index = parseInt(query);
+        if (!isNaN(index)) {
+            if (this.hand[index])
+                return this.hand[index];
+        }
+        return this.hand.find(card => {
+            return card.getName().includes(query);
+        })
     }
 
     public playCard(game: Game2P, card: Card) {

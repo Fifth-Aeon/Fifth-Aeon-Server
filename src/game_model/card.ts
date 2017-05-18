@@ -16,10 +16,9 @@ export class Card implements Storable {
 
     protected cost: Resource;
     protected entity = false;
-    protected owner: number;
-    protected owningPlayer: Player;
-    
-    protected dataId: string; 
+    protected owner: Player;
+
+    protected dataId: string;
     protected minionModifiers: Array<{ id: string, param: number }>;
 
     protected metadata = {
@@ -34,6 +33,14 @@ export class Card implements Storable {
         this.minionModifiers = minionModifiers;
     }
 
+    public setOwner(owner: Player) {
+        this.owner = owner;
+    }
+
+    public getName() {
+        return this.name;
+    }
+
     public getMetadata() {
         this.metadata.types.set('mechanics', new Type(Types.list, Collections.mechanic));
         return this.metadata;
@@ -43,15 +50,20 @@ export class Card implements Storable {
         return this.entity;
     }
 
-    public toString():string {
+    public toString(): string {
         return `${this.name}: (${this.cost})`
     }
 
     public toJson() {
-        return "";
+        let owner = this.owner;
+        this.owner = null;
+        let json = JSON.stringify(this);
+        this.owner = owner;
+        console.log(json);
+        return json;
     }
 
-    public fromJson(raw:object) {
+    public fromJson(raw: object) {
         return null;
     }
 
@@ -63,7 +75,7 @@ export class Card implements Storable {
     }
 
     public newInstance(): Card {
-        let clone =  new Card(this.name, this.cost, this.minionModifiers);
+        let clone = new Card(this.name, this.cost, this.minionModifiers);
         clone.unpackData(this);
         return clone;
     }
