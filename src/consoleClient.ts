@@ -1,10 +1,11 @@
-import { getClientMessenger, MessageTypes, Message } from './messenger';
+import { ClientMessenger } from './messenger';
+import { MessageType, Message } from './message';
 import { Game2P, GameAction, GameActionType, GameEvent } from './game_model/game2p';
 
 import * as readline from 'readline';
 import * as debug from 'debug';
 
-const messenger = getClientMessenger();
+const messenger = new ClientMessenger(2222);
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -24,23 +25,43 @@ class ConsoleClient {
         this.registerCommand('pass', this.pass, ClientState.inGame);
         this.registerCommand('resource', this.playResource, ClientState.inGame);
         this.registerCommand('play', this.playCard, ClientState.inGame);
+        this.registerCommand('attack', this.attack, ClientState.inGame);
+        this.registerCommand('block', this.block, ClientState.inGame);
         this.registerCommand('help', this.help);
         this.registerCommand('exit', (args) => process.exit());
-        messenger.addHandeler(MessageTypes.StartGame, this.startGame, this);
-        messenger.addHandeler(MessageTypes.GameEvent, (msg) => this.handleGameEvent(msg.data), this);
-        messenger.addHandeler(MessageTypes.ClientError, (msg) => console.error('Error:', msg.data), this);
+        messenger.addHandeler(MessageType.StartGame, this.startGame, this);
+        messenger.addHandeler(MessageType.GameEvent, (msg) => this.handleGameEvent(msg.data), this);
+        messenger.addHandeler(MessageType.ClientError, (msg) => console.error('Error:', msg.data), this);
     }
 
     private handleGameEvent(event: GameEvent) {
         console.log('ev', event);
     }
 
+    private attack(args: string[]) {
+        messenger.sendMessageToServer(MessageType.GameAction, {
+            type: GameActionType.declareAttackers,
+            params: {
+                attackers: args
+            }
+        });
+    }
+
+    private block(block: string[]) {
+        messenger.sendMessageToServer(MessageType.GameAction, {
+            type: GameActionType.declareBlockers,
+            params: {
+                blocks: block.map(blocker => blocker.split('-'))
+            }
+        });
+    }
+
     private join() {
-        messenger.sendMessageToServer(MessageTypes.JoinQueue, (new Date()).toString());
+        messenger.sendMessageToServer(MessageType.JoinQueue, {});
     }
 
     private playCard(args: string[]) {
-        messenger.sendMessageToServer(MessageTypes.GameAction, {
+        messenger.sendMessageToServer(MessageType.GameAction, {
             type: GameActionType.playCard,
             params: {
                 toPlay: args[0],
@@ -58,13 +79,13 @@ class ConsoleClient {
     }
 
     private pass() {
-        messenger.sendMessageToServer(MessageTypes.GameAction, {
+        messenger.sendMessageToServer(MessageType.GameAction, {
             type: GameActionType.pass
         } as GameAction)
     }
 
     private playResource() {
-        messenger.sendMessageToServer(MessageTypes.GameAction, {
+        messenger.sendMessageToServer(MessageType.GameAction, {
             type: GameActionType.playResource
         } as GameAction)
     }
@@ -73,10 +94,9 @@ class ConsoleClient {
         console.log("commands:", this.handlers.keys());
     }
 
-
     public prompt() {
         rl.question('> ', (cmd: string) => {
-            let parts = cmd.split(' ');
+            let parts = cmd.split(/\s+/);
             let handler = this.handlers.get(parts[0]);
             if (handler)
                 handler(parts.slice(1));
@@ -88,7 +108,6 @@ class ConsoleClient {
 
     public registerCommand(cmd: string, callback: (args: string[]) => void, reqState: ClientState = ClientState.any) {
         this.handlers.set(cmd, (args) => {
-            console.log(this.state, reqState);
             if (reqState != ClientState.any && this.state != reqState) {
                 console.error('Can\'t run command', cmd, 'in state', ClientState[this.state], 'needs', ClientState[reqState]);
                 return;
@@ -96,7 +115,6 @@ class ConsoleClient {
             callback.bind(this)(args);
         });
     }
-
 }
 
 const cc = new ConsoleClient();

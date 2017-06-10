@@ -59,13 +59,19 @@ export class Player {
         }
     }
 
-    public queryCard(query: string): Card {
+    
+
+    public queryHand(query: string) {
+        return this.queryCards(query, this.hand);
+    }
+
+    public queryCards(query: string, cards: Card[]): Card {
         let index = parseInt(query);
         if (!isNaN(index)) {
-            if (this.hand[index])
-                return this.hand[index];
+            if (cards[index])
+                return cards[index];
         }
-        return this.hand.find(card => {
+        return cards.find(card => {
             return card.getName().includes(query);
         })
     }

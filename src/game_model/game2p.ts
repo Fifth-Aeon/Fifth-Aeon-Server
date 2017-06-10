@@ -1,5 +1,5 @@
 import { Dictionary } from 'typescript-collections';
-import { Board } from './basic-board';
+import { Board } from './board';
 import { Player } from './player';
 import { Card } from './card';
 import { Modifier } from './modifier';
@@ -15,8 +15,10 @@ let recipe = {
 }
 
 enum GamePhase {
-    play1, combat, play2, end
+    play1, combat, play2, end, responceWindow
 }
+
+
 const game_phase_count = 4;
 
 export enum GameActionType {
@@ -24,7 +26,7 @@ export enum GameActionType {
 }
 
 export enum GameEventType {
-    attack, turnStart, phaseChange, playResource, mulligan, playCard
+    attack, turnStart, phaseChange, playResource, mulligan, playCard, block
 }
 
 export interface GameAction {
@@ -47,8 +49,12 @@ export class Game2P {
     private modifierLibrary: Dictionary<string, Modifier>;
     private format: GameFormat;
     private phase: GamePhase;
+    private lastPhase: GamePhase;
     private actionHandelers: Map<GameActionType, actionCb>
     private events: GameEvent[];
+    private attackers: Entity[];
+    private blockers: [Entity, Entity][];
+
 
     constructor(format = new GameFormat()) {
         this.format = format;
@@ -60,14 +66,27 @@ export class Game2P {
             new Player(testGen.generateCards(recipe, 30), 1, this.format.initalResource[1], this.format.initialLife[1])
         ];
         this.events = [];
+        this.attackers = [];
+        this.blockers = [];
 
         this.addActionHandeler(GameActionType.pass, this.pass);
         this.addActionHandeler(GameActionType.playResource, this.playResource);
         this.addActionHandeler(GameActionType.playCard, this.playCard);
+        this.addActionHandeler(GameActionType.declareAttackers, this.declareAttackers);
+        this.addActionHandeler(GameActionType.declareBlockers, this.declareBlockers);
     }
 
-    private resolveCard(query: string, player: Player) {
-        return player.queryCard(query);
+    public getWinner() {
+        return -1;
+    }
+
+    private resolveCard(query: string, player: Player): Card {
+        return player.queryHand(query);
+    }
+
+    private resolvePlayerUnity(query: string, player: Player): Entity {
+        let options = this.board.getPlayerEntities(player.getPlayerNumber());
+        return player.queryCards(query, options) as Entity;
     }
 
     private playCard(act: GameAction): boolean {
@@ -79,6 +98,35 @@ export class Game2P {
             return false;
         this.addGameEvent(new GameEvent(GameEventType.playCard, { played: card.toJson() }));
         player.playCard(this, card);
+        return true;
+    }
+
+    private declareAttackers(act: GameAction): boolean {
+        let player = this.players[act.player];
+        if (!this.isPlayerTurn(act.player) || this.phase !== GamePhase.play1)
+            return false;
+        this.attackers = act.params['attackers']
+            .map(query => this.resolvePlayerUnity(query, player))
+            .filter(entity => entity);
+        console.log(act.params['attackers'], this.attackers);
+        this.phase = GamePhase.combat
+        this.addGameEvent(new GameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
+        return true;
+    }
+
+    private declareBlockers(act: GameAction) {
+        let player = this.players[act.player];
+        let op = this.players[this.getOtherPlayerNumber(act.player)];
+        if (this.isPlayerTurn(act.player) || this.phase !== GamePhase.combat)
+            return false;
+        this.blockers = act.params['blockers']
+            .map(block => [
+                this.resolvePlayerUnity(block[0], op),
+                this.resolvePlayerUnity(block[1], player)
+            ])
+            .filter(block => block[0] && block[1]);
+        this.addGameEvent(new GameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
+        this.resolveCombat();
         return true;
     }
 
@@ -95,18 +143,25 @@ export class Game2P {
     private pass(act: GameAction): boolean {
         if (!this.isPlayerTurn(act.player))
             return false;
-        this.nextPhase();
+        this.nextPhase(act.player);
         return true;
     }
 
-    private nextPhase() {
+    private resolveCombat() {
+        this.phase = GamePhase.play2;
+    }
+
+    private nextPhase(player: number) {
         let curr = this.phase;
-        this.phase += 1;
-        if (this.phase > game_phase_count) {
-            this.nextTurn();
-            this.phase = 0;
+        switch (this.phase) {
+            case GamePhase.play1:
+                this.nextTurn();
+            case GamePhase.play2:
+                this.nextTurn();
+            case GamePhase.combat:
+                if (!this.isPlayerTurn(player))
+                    this.resolveCombat();
         }
-        this.addGameEvent(new GameEvent(GameEventType.phaseChange, { from: curr, to: this.phase }));
     }
 
     public addGameEvent(event: GameEvent) {
@@ -182,5 +237,7 @@ ${playerBoard}`
         let currentPlayerEntities = this.getCurrentPlayerEntities();
         currentPlayerEntities.forEach(entity => entity.refresh());
         this.addGameEvent(new GameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
+        this.attackers = [];
+        this.blockers = [];
     }
 }

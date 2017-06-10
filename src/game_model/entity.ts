@@ -116,6 +116,16 @@ export class Entity extends Card {
         return `${this.name} (${this.cost}) - (${this.damage}/${this.life})`;
     }
 
+    public toJson() {
+        let owner = this.owner;
+        let parent = this.parent
+        this.owner = null;
+        this.parent = null;
+        let json = JSON.stringify(this);
+        this.owner = owner;
+        this.parent = this.parent;
+        return json;
+    }
 
     public fight(target: Entity) {
         // Trigger an attack event
