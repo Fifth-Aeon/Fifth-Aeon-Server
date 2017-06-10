@@ -15,7 +15,7 @@ function randInt(low: number, high: number): number {
 }
 
 export class CardGenerator {
-    private options: Array<{ cost: number, effect: (proto) => void }> = [];
+    private options: Array<{ cost: number, effect: (proto:any) => void }> = [];
     constructor() {
         this.options.push({ cost: 1, effect: (card) => card.life++ });
         this.options.push({ cost: 1, effect: (card) => card.damage++ });

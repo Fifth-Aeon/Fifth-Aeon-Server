@@ -10,7 +10,7 @@ export class MatchQueue {
     private playerQueue = new LinkedDictionary<string, number>();
     private privateGames = new Map<string, string>();
 
-    constructor(private server: Server, private errors: ErrorHandeler, private messenger: ServerMessenger, private startGame: (p1, p2) => void) {
+    constructor(private server: Server, private errors: ErrorHandeler, private messenger: ServerMessenger, private startGame: (p1:string, p2:string) => void) {
         messenger.addHandeler(MessageType.JoinQueue, this.onJoinQueue, this);
         messenger.addHandeler(MessageType.ExitQueue, this.onExitQueue, this);
         messenger.addHandeler(MessageType.NewPrivateGame, this.newPrivateGame, this);
@@ -37,7 +37,7 @@ export class MatchQueue {
             this.errors.clientError(message.source, ErrorType.InvalidIdError, "No game with that id.");
             return;
         }
-        this.startGame(this.privateGames.get(message.data.gameId), message.source);
+        this.startGame(this.privateGames.get(message.data.gameId) as string, message.source);
         this.privateGames.delete(message.data.gameId);
     }
 

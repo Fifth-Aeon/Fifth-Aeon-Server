@@ -5,7 +5,7 @@ let ng = new NameGenerator();
 export class Account {
     username: string;
     token: string;
-    gameId: string;
+    gameId: string | null;
     lastUsed: Date;
 
     constructor(token: string, name: string) {
@@ -19,7 +19,7 @@ export class Account {
         this.lastUsed = new Date();
     }
 
-    public setInGame(gameId: string) {
+    public setInGame(gameId: string | null) {
         this.gameId = gameId;
     }
 

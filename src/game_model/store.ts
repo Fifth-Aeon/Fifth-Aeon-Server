@@ -9,7 +9,7 @@ let types = ['card', 'mechanic']
 
 export interface Storable {
     toJson(): string;
-    fromJson(raw: object);
+    fromJson(raw: object): any;
     getMetadata(): {
         types: Map<string, Type>,
         values: Map<string, string>
@@ -19,15 +19,22 @@ export interface Storable {
 export class Store {
     private data: Map<string, Map<string, object>>;
 
-    public registerMechanic(id, mechanic) {
-        this.data.get('mechanic').set(id, mechanic);
+    public registerMechanic(id: string, mechanic: Mechanic) {
+        let mechanics = this.data.get('mechanic');
+        if (!mechanics) {
+            throw new Error("Mechanics not initilized");
+        }
+        mechanics.set(id, mechanic);
     }
 
-    private build(type: string, data: object): object {
+    private build(type: string, data: object): object | null {
         let item: Storable;
         switch (type) {
             case 'card':
                 item = new Card();
+                break;
+            default:
+                return null;
         }
         item.fromJson(data);
         return item;

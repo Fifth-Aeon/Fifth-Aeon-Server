@@ -65,7 +65,7 @@ export class Player {
         return this.queryCards(query, this.hand);
     }
 
-    public queryCards(query: string, cards: Card[]): Card {
+    public queryCards(query: string, cards: Card[]): Card | null {
         let index = parseInt(query);
         if (!isNaN(index)) {
             if (cards[index])
@@ -73,7 +73,7 @@ export class Player {
         }
         return cards.find(card => {
             return card.getName().includes(query);
-        })
+        }) || null;
     }
 
     public playCard(game: Game2P, card: Card) {

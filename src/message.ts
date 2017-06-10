@@ -16,7 +16,7 @@ export enum MessageType {
 
 export interface Message {
     source: string;
-    type: string;
+    type: MessageType;
     data: any;
 }
 

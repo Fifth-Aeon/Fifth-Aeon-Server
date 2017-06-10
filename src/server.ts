@@ -37,8 +37,9 @@ export class Server {
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
         this.messenger.addHandeler(MessageType.AnonymousLogin, (msg) => this.anonLogin(msg));
         this.messenger.onMessage = (msg: Message) => {
-            if (this.accounts.has(msg.source))
-                this.accounts.get(msg.source).freshen();
+            let account = this.accounts.get(msg.source);
+            if (account)
+                account.freshen();
         }
 
         this.passMessagesToGames();
@@ -49,8 +50,9 @@ export class Server {
         this.accounts.delete(acc.token);
         this.gameQueue.removeFromQueue(acc.token);
         this.messenger.deleteUser(acc.token);
-        if (acc.gameId && this.games.has(acc.gameId)) {
-            this.games.get(acc.gameId).end();
+        if (acc.gameId) {
+            let game = this.games.get(acc.gameId);
+            if (game) game.end();
         }
     }
 
@@ -117,20 +119,24 @@ export class Server {
                 return;
             }
             let id = acc.getGame();
-    
+
             if (!id || !this.games.has(id)) {
                 this.errors.clientError(msg.source, ErrorType.GameActionError, "Not in game.");
                 return;
             }
-            this.games.get(id).handleAction(msg);
+            (this.games.get(id) as GameServer).handleAction(msg);
         });
     }
 
     public makeGame(token1: string, token2: string) {
         let id = getToken();
-        this.accounts.get(token1).setInGame(id);
-        this.accounts.get(token2).setInGame(id);
-        let server = new GameServer(this.messenger, this, id, this.accounts.get(token1), this.accounts.get(token2));
+        let ac1 = this.accounts.get(token1);
+        let ac2 = this.accounts.get(token2);
+        if (!ac1 || !ac2)
+            return;
+        ac1.setInGame(id);
+        ac2.setInGame(id);
+        let server = new GameServer(this.messenger, this, id, ac1, ac2);
         this.games.set(id, server);
         server.start();
     }

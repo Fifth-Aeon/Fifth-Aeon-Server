@@ -32,7 +32,7 @@ export enum GameEventType {
 export interface GameAction {
     type: GameActionType,
     player: number,
-    params: object
+    params: any
 }
 
 export class GameEvent {
@@ -80,7 +80,7 @@ export class Game2P {
         return -1;
     }
 
-    private resolveCard(query: string, player: Player): Card {
+    private resolveCard(query: string, player: Player): Card | null {
         return player.queryHand(query);
     }
 
@@ -93,7 +93,7 @@ export class Game2P {
         let player = this.players[act.player];
         if (!this.isPlayerTurn(act.player))
             return false;
-        let card = this.resolveCard(act.params['toPlay'], player);
+        let card = this.resolveCard(act.params.toPlay, player);
         if (!card)
             return false;
         this.addGameEvent(new GameEvent(GameEventType.playCard, { played: card.toJson() }));
@@ -106,8 +106,8 @@ export class Game2P {
         if (!this.isPlayerTurn(act.player) || this.phase !== GamePhase.play1)
             return false;
         this.attackers = act.params['attackers']
-            .map(query => this.resolvePlayerUnity(query, player))
-            .filter(entity => entity);
+            .map((query: string) => this.resolvePlayerUnity(query, player))
+            .filter((entity: Entity) => entity);
         console.log(act.params['attackers'], this.attackers);
         this.phase = GamePhase.combat
         this.addGameEvent(new GameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
@@ -120,11 +120,11 @@ export class Game2P {
         if (this.isPlayerTurn(act.player) || this.phase !== GamePhase.combat)
             return false;
         this.blockers = act.params['blockers']
-            .map(block => [
+            .map((block: any) => [
                 this.resolvePlayerUnity(block[0], op),
                 this.resolvePlayerUnity(block[1], player)
             ])
-            .filter(block => block[0] && block[1]);
+            .filter((block: [Entity, Entity]) => block[0] && block[1]);
         this.addGameEvent(new GameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
         this.resolveCombat();
         return true;
@@ -156,11 +156,14 @@ export class Game2P {
         switch (this.phase) {
             case GamePhase.play1:
                 this.nextTurn();
+                break;
             case GamePhase.play2:
                 this.nextTurn();
+                break;
             case GamePhase.combat:
                 if (!this.isPlayerTurn(player))
                     this.resolveCombat();
+                break;
         }
     }
 

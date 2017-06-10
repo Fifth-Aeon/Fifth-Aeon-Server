@@ -1,3 +1,5 @@
+import { parse, stringify } from 'circular-json';
+
 import { Entity, Action, ActionType } from './entity';
 import { Resource } from './resource';
 import { Game2P } from './game2p';
@@ -6,6 +8,7 @@ import { Mechanic } from './mechanics';
 import { remove } from 'lodash';
 import { Storable } from './store';
 import { Collections, Type, Types } from './dataTypes'
+
 
 export class Card implements Storable {
     protected name: string;
@@ -26,7 +29,7 @@ export class Card implements Storable {
         values: new Map<string, string>()
     }
 
-    constructor(name: string = 'nameless', cost: Resource = new Resource(), minionModifiers = []) {
+    constructor(name: string = 'nameless', cost: Resource = new Resource(), minionModifiers:any[] = []) {
         this.cost = cost;
         this.name = name;
         this.id = Math.random().toString()
@@ -55,11 +58,7 @@ export class Card implements Storable {
     }
 
     public toJson() {
-        let owner = this.owner;
-        this.owner = null;
-        let json = JSON.stringify(this);
-        this.owner = owner;
-        console.log(json);
+        let json = stringify(this);
         return json;
     }
 
@@ -67,7 +66,7 @@ export class Card implements Storable {
         return null;
     }
 
-    public unpackData(data) {
+    public unpackData(data:any) {
         this.dataId = data.dataId || this.dataId;
         this.name = data.name || this.name;
         this.cost = data.cost || this.cost;

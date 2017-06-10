@@ -1,4 +1,5 @@
-import { Dictionary } from 'typescript-collections'
+import { parse, stringify } from 'circular-json';
+
 
 import { Game2P } from './game2p';
 //import { Sprite } from './sprite';
@@ -49,7 +50,7 @@ export class Entity extends Card {
     private modifiers: Modifier[];
     private events: EventGroup;
 
-    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers = [], damage: number = 1, life: number = 1) {
+    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers:Modifier[] = [], damage: number = 1, life: number = 1) {
         super(name, cost)
         this.events = new EventGroup();
         this.exausted = true;
@@ -57,6 +58,7 @@ export class Entity extends Card {
         this.damage = damage;
         this.maxLife = life;
         this.entity = true;
+        this.modifiers = minionModifiers;
     }
 
     public setParent(parent: Game2P) {
@@ -80,7 +82,7 @@ export class Entity extends Card {
     }
 
     public newInstance(): Card {
-        let clone = new Entity(this.name, this.cost, this.minionModifiers, this.damage, this.life);
+        let clone = new Entity(this.name, this.cost, this.modifiers, this.damage, this.life);
         //clone.cardDataId = cardForm.dataId;
         let props = [
             'parent', 'sprite', 'playerControlled', 'row', 'col',
@@ -104,7 +106,7 @@ export class Entity extends Card {
     }
 
     public getPossibleAcitons(): Array<Action> {
-        let actions = [];
+        let actions:Action[] = [];
 
         if (this.canActivate()) {
 
@@ -117,14 +119,8 @@ export class Entity extends Card {
     }
 
     public toJson() {
-        let owner = this.owner;
-        let parent = this.parent
-        this.owner = null;
-        this.parent = null;
-        let json = JSON.stringify(this);
-        this.owner = owner;
-        this.parent = this.parent;
-        return json;
+
+        return stringify(this);
     }
 
     public fight(target: Entity) {

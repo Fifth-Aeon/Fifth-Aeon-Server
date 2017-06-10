@@ -1,8 +1,11 @@
 import * as WebSocket from 'ws';
 
+
 import { getToken } from './tokens';
 import { Queue } from 'typescript-collections';
 import { Message, MessageType } from './message';
+import * as express from 'express';
+
 
 /**
  * Abstract class used to communicate via websockets. Can be used by the client or server. 
@@ -10,12 +13,12 @@ import { Message, MessageType } from './message';
  * @class Messenger
  */
 abstract class Messenger {
-    protected handlers: Map<string, (Message) => void>;
+    protected handlers: Map<MessageType, (message:Message) => void>;
     protected name: string;
     protected id: string;
     public onMessage: (message: Message) => void = () => null;
 
-    constructor(isServer) {
+    constructor(isServer:boolean) {
         this.name = isServer ? 'Server' : 'Client';
         this.handlers = new Map();
     }
@@ -31,9 +34,9 @@ abstract class Messenger {
         }
     }
 
-    protected makeMessageHandler(ws) {
-        ws.on('message', (data, flags) => {
-            let message: Message = this.readMessage(data);
+    protected makeMessageHandler(ws:any) {
+        ws.on('message', (data:any, flags:any) => {
+            let message = this.readMessage(data);
             if (!message) {
                 return;
             }
@@ -55,7 +58,7 @@ abstract class Messenger {
         });
     }
 
-    public addHandeler(messageType, callback: (message: Message) => void, context?: any) {
+    public addHandeler(messageType:MessageType, callback: (message: Message) => void, context?: any) {
         if (context) {
             callback = callback.bind(context);
         }
@@ -82,7 +85,7 @@ export class ServerMessenger extends Messenger {
     protected connections: Map<string, any>;
     protected queues: Map<string, Queue<string>>;
 
-    constructor(server) {
+    constructor(server:any) {
         super(true);
         this.connections = new Map<string, any>();
         this.queues = new Map<string, Queue<string>>();
@@ -164,8 +167,9 @@ export class ServerMessenger extends Messenger {
         if (ws.readyState === ws.OPEN) {
             ws.send(msg);
         } else {
-            if (this.queues.has(target)) {
-                this.queues.get(target).add(msg);
+            let queue = this.queues.get(target)
+            if (queue) {
+                queue.add(msg);
             } else
                 console.error('ws closed, message lost');
         }
@@ -191,9 +195,4 @@ export class ClientMessenger extends Messenger {
         });
         this.makeMessageHandler(this.ws);
     }
-}
-
-const messengers = {
-    client: null,
-    server: null
 }

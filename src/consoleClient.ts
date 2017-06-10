@@ -17,7 +17,7 @@ enum ClientState {
 
 class ConsoleClient {
     private handlers: Map<string, (args: string[]) => void> = new Map<string, (args: string[]) => void>();
-    private gameId: string = null;
+    private gameId: string | null = null;
     private state: ClientState = ClientState.inLobby;
 
     constructor() {
