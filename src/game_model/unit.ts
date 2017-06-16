@@ -5,7 +5,6 @@ import { Game } from './game';
 //import { Sprite } from './sprite';
 import { Player } from './player';
 import { Card } from './card';
-import { Modifier } from './modifier';
 import { EventGroup, EventType } from './game-event';
 import { Resource } from './resource';
 
@@ -23,40 +22,31 @@ export class Action {
     ) { }
 }
 
-export class Event { }
 
-
-
-export class Unit extends Card {
+export abstract class Unit extends Card {
     // Board 
-    private cardDataId: string;
     private parent: Game;
 
     // Stats
-    private life: number;
-    private maxLife: number;
-    private damage: number;
+    protected life: number;
+    protected maxLife: number;
+    protected damage: number;
 
     // Actions
-    private exausted: boolean;
+    protected exausted: boolean;
 
     // Mods
-    private modifiers: Modifier[];
-    private events: EventGroup;
+    protected events: EventGroup;
 
-    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers: Modifier[] = [], damage: number = 1, life: number = 1) {
-        super(name, cost)
+    constructor() {
+        super()
         this.events = new EventGroup();
         this.exausted = true;
-        this.life = life;
-        this.damage = damage;
-        this.maxLife = life;
         this.unit = true;
-        this.modifiers = minionModifiers;
     }
 
-    public setParent(parent: Game) {
-        this.parent = parent;
+    public getEvents() {
+        return this.events;
     }
 
     public getOwner(): Player {
@@ -67,12 +57,6 @@ export class Unit extends Card {
         super.play(game);
         game.playUnit(this, 0);
     }
-
-    public addModifier(mod: Modifier) {
-        this.modifiers.push(mod);
-        mod.apply(this);
-    }
- 
 
     public refresh() {
         this.exausted = false;
@@ -104,11 +88,12 @@ export class Unit extends Card {
 
     public fight(target: Unit) {
         // Trigger an attack event
-        let damage = this.events.trigger(EventType.onAttack, this.events.makeParams({
-            damage: this.damage,
-            attacker: this,
-            defender: target
-        })).getValue('damage');
+        let eventParams = new Map<string, any>([
+            ['damage', this.damage],
+            ['attacker', this],
+            ['defender', target]
+        ]);
+        let damage:number = this.events.trigger(EventType.onAttack, eventParams).get('damage');
 
         // Remove actions and deal damage
         this.dealDamage(target, damage);
@@ -127,6 +112,6 @@ export class Unit extends Card {
     }
 
     public die() {
-        this.parent.removeUnit(this);
+        this.events.trigger(EventType.onDeath, new Map());
     }
 }

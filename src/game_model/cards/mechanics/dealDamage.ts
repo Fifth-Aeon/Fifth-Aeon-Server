@@ -1,8 +1,8 @@
-import { Mechanic } from '../mechanic';
-import { Game } from '../Game';
-import { Targeter } from '../targeter';
-import { Card } from '../card';
-import { Unit } from '../unit';
+import { Mechanic } from '../../mechanic';
+import { Game } from '../../Game';
+import { Targeter } from '../../targeter';
+import { Card } from '../../card';
+import { Unit } from '../../unit';
 
 export class DealDamage extends Mechanic {
     constructor(private amount: number, private targeter: Targeter<Unit>) {

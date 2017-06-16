@@ -1,6 +1,6 @@
 import { Messenger } from './clientMessenger';
 import { MessageType, Message } from '../message';
-import { Game, GameAction, GameActionType, GameEvent } from '../game_model/game';
+import { Game, GameAction, GameActionType, SyncGameEvent } from '../game_model/game';
 
 import * as readline from 'readline';
 import * as debug from 'debug'; 
@@ -34,7 +34,7 @@ class ConsoleClient {
         messenger.addHandeler(MessageType.ClientError, (msg) => console.error('Error:', msg.data), this);
     }
 
-    private handleGameEvent(event: GameEvent) {
+    private handleGameEvent(event: SyncEvent) {
         console.log('ev', event);
     }
 

@@ -2,11 +2,11 @@ import { Dictionary } from 'typescript-collections';
 import { Board } from './board';
 import { Player } from './player';
 import { Card } from './card';
-import { Modifier } from './modifier';
 import { Unit, Action } from './unit';
 import { GameFormat } from './gameFormat';
 import { CardGenerator } from './cardGenerator';
 import { Resource } from './resource';
+import { GameEvent, EventType } from './game-event';
 
 import { Serialize, Deserialize } from 'cerialize';
 
@@ -37,7 +37,7 @@ export interface GameAction {
     params: any
 }
 
-export class GameEvent {
+export class SyncGameEvent {
     constructor(public type: GameEventType, public params: object) { }
 }
 
@@ -48,12 +48,11 @@ export class Game {
     private turn: number;
     private turnNum: number;
     private players: Player[];
-    private modifierLibrary: Dictionary<string, Modifier>;
     private format: GameFormat;
     private phase: GamePhase;
     private lastPhase: GamePhase;
     private actionHandelers: Map<GameActionType, actionCb>
-    private events: GameEvent[];
+    private events: SyncGameEvent[];
     private attackers: Unit[];
     private blockers: [Unit, Unit][];
 
@@ -98,7 +97,7 @@ export class Game {
         let card = this.resolveCard(act.params.toPlay, player);
         if (!card)
             return false;
-        this.addGameEvent(new GameEvent(GameEventType.playCard, { played: Serialize(card) }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.playCard, { played: Serialize(card) }));
         player.playCard(this, card);
         return true;
     }
@@ -112,7 +111,7 @@ export class Game {
             .filter((unit: Unit) => unit);
         console.log(act.params['attackers'], this.attackers);
         this.phase = GamePhase.combat
-        this.addGameEvent(new GameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
         return true;
     }
 
@@ -127,7 +126,7 @@ export class Game {
                 this.resolvePlayerUnity(block[1], player)
             ])
             .filter((block: [Unit, Unit]) => block[0] && block[1]);
-        this.addGameEvent(new GameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
         this.resolveCombat();
         return true;
     }
@@ -138,7 +137,7 @@ export class Game {
             return true;
         let res = new Resource();
         player.playResource(res);
-        this.addGameEvent(new GameEvent(GameEventType.playResource, { played: res }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.playResource, { played: res }));
         return false;
     }
 
@@ -169,11 +168,11 @@ export class Game {
         }
     }
 
-    public addGameEvent(event: GameEvent) {
+    public addGameEvent(event: SyncGameEvent) {
         this.events.push(event);
     }
 
-    public handleAction(action: GameAction): GameEvent[] {
+    public handleAction(action: GameAction): SyncGameEvent[] {
         console.log('handle', GameActionType[action.type], action.params);
         let mark = this.events.length;
         let handeler = this.actionHandelers.get(action.type);
@@ -223,9 +222,16 @@ ${playerBoard}`
         this.addUnit(ent, owner);
     }
 
-    public addUnit(minion: Unit, owner: number) {
-        minion.setParent(this);
-        this.board.addUnit(minion);
+    public addUnit(unit: Unit, owner: number) {
+        unit.getEvents().addEvent(null, new GameEvent(EventType.onDamaged, (params) => {
+            this.removeUnit(unit);
+            return params;
+        }));
+        this.board.addUnit(unit);
+    }
+
+    public getBoard() {
+        return this.board;
     }
 
     public getCurrentPlayerEntities() {
@@ -241,7 +247,7 @@ ${playerBoard}`
         this.turnNum++;
         let currentPlayerEntities = this.getCurrentPlayerEntities();
         currentPlayerEntities.forEach(unit => unit.refresh());
-        this.addGameEvent(new GameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
         this.attackers = [];
         this.blockers = [];
     }

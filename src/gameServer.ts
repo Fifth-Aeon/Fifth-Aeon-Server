@@ -1,8 +1,8 @@
-import { ServerMessenger} from './messenger'
+import { ServerMessenger } from './messenger'
 import { Message, MessageType } from './message';
 
 import { Game, GameAction } from './game_model/game';
-import {GameFormat} from './game_model/gameFormat';
+import { GameFormat } from './game_model/gameFormat';
 import { Server } from './server';
 import { Account } from './account';
 

@@ -1,17 +1,22 @@
 import { Mechanic } from './mechanic';
-import { Card} from './card';
+import { Card } from './card';
 
+interface CardConstructor {
+    new (): Card;
+}
 
 class GameData {
-    private cards:Map<string, Card> = new Map<string, Card>();
-    public addCard(id:string, card:Card) {
-        this.cards.set(id, card);
+    private cards: Map<string, CardConstructor> = new Map<string, CardConstructor>();
+
+    public addCardConstructor(id: string, constructor: CardConstructor) {
+        this.cards.set(id, constructor);
     }
-    public getCard(id: string) {
-        let card = this.cards.get(id);
-        if (!card)
+
+    public getCard(id: string): Card {
+        let constructor = this.cards.get(id);
+        if (!constructor)
             throw Error('No card with id: ' + id);
-        return card;
+        return new constructor();
     }
 }
 
