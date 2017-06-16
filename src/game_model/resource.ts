@@ -1,3 +1,10 @@
+export const ResourceType = {
+    "Astral": "Astral",
+    "Primeval": "Primeval",
+    "Necrotic": "Necrotic",
+    "Radiant": "Radiant"
+}
+
 export class Resource {
     private types: Map<string, number>;
     private numeric: number;

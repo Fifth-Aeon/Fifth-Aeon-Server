@@ -8,6 +8,8 @@ import { GameFormat } from './gameFormat';
 import { CardGenerator } from './cardGenerator';
 import { Resource } from './resource';
 
+import { Serialize, Deserialize } from 'cerialize';
+
 let testGen = new CardGenerator();
 let recipe = {
     rarityValues: [],
@@ -96,7 +98,7 @@ export class Game {
         let card = this.resolveCard(act.params.toPlay, player);
         if (!card)
             return false;
-        this.addGameEvent(new GameEvent(GameEventType.playCard, { played: card.toJson() }));
+        this.addGameEvent(new GameEvent(GameEventType.playCard, { played: Serialize(card) }));
         player.playCard(this, card);
         return true;
     }

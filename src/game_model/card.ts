@@ -1,39 +1,32 @@
-import { parse, stringify } from 'circular-json';
+import { serialize, serializeAs } from 'cerialize';
+
 
 import { Unit, Action, ActionType } from './unit';
 import { Resource } from './resource';
 import { Game } from './game';
 import { Player } from './player';
-import { Mechanic } from './mechanics';
+import { Mechanic } from './mechanic';
+import { Targeter } from './targeter';
 import { remove } from 'lodash';
-import { Storable } from './store';
 import { Collections, Type, Types } from './dataTypes'
 
 
-export class Card implements Storable {
-    protected name: string;
-    protected id: string;
-    protected set: string;
-    protected rarity: number;
-    protected mechanics: any[];
+export abstract class Card {
+    @serialize protected name: string;
+    @serialize protected id: string;
+    @serialize protected set: string;
+    @serialize protected rarity: number;
+    @serializeAs(Mechanic) protected mechanics: Mechanic[];
 
-    protected cost: Resource;
-    protected unit = false;
-    protected owner: Player;
+    @serializeAs(Resource) protected cost: Resource;
+    @serialize protected unit = false;
+    @serialize protected owner: Player;
+    @serialize protected dataId: string;
+    
+    protected targeter: Targeter<any>;
 
-    protected dataId: string;
-    protected minionModifiers: Array<{ id: string, param: number }>;
-
-    protected metadata = {
-        types: new Map<string, Type>(),
-        values: new Map<string, string>()
-    }
-
-    constructor(name: string = 'nameless', cost: Resource = new Resource(), minionModifiers:any[] = []) {
-        this.cost = cost;
-        this.name = name;
-        this.id = Math.random().toString()
-        this.minionModifiers = minionModifiers;
+    constructor() {
+        this.id = Math.random().toString(16)
     }
 
     public setOwner(owner: Player) {
@@ -44,39 +37,12 @@ export class Card implements Storable {
         return this.name;
     }
 
-    public getMetadata() {
-        this.metadata.types.set('mechanics', new Type(Types.list, Collections.mechanic));
-        return this.metadata;
-    }
-
     public isEntiy(): boolean {
         return this.unit;
     }
 
     public toString(): string {
         return `${this.name}: (${this.cost})`
-    }
-
-    public toJson() {
-        let json = stringify(this);
-        return json;
-    }
-
-    public fromJson(raw: object) {
-        return null;
-    }
-
-    public unpackData(data:any) {
-        this.dataId = data.dataId || this.dataId;
-        this.name = data.name || this.name;
-        this.cost = data.cost || this.cost;
-        this.minionModifiers = data.minionModifiers || [];
-    }
-
-    public newInstance(): Card {
-        let clone = new Card(this.name, this.cost, this.minionModifiers);
-        clone.unpackData(this);
-        return clone;
     }
 
     public play(game: Game) {
@@ -87,19 +53,5 @@ export class Card implements Storable {
         let entities = battle.getCurrentPlayerEntities();
         let targets = [];
         return [];
-        /*
-        entities.forEach(unit => {
-            battle.board.getNeighbors(unit.row, unit.col, true).forEach(neighbor => {
-                targets.push(neighbor);
-            });
-        })
-        return targets.map(target => {
-            return new Action(ActionType.spell, null, target.row, target.col, () => {
-                this.play(battle, target.row, target.col);
-            })
-        }).filter(action => {
-            return battle.board.cells[action.row][action.col] === null;
-        });
-        */
     }
 }
