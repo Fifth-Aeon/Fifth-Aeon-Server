@@ -1,4 +1,4 @@
-import { Entity, Action } from './entity';
+import { Unit, Action } from './unit';
 import { Queue } from 'typescript-collections';
 
 /**
@@ -8,20 +8,20 @@ import { Queue } from 'typescript-collections';
  * @class Board
  */
 export class Board {
-    private spaces: Entity[][];
+    private spaces: Unit[][];
    
     constructor(playerCount: number, spaceCount: number) {
         this.spaces = new Array(playerCount);
         for (let i = 0; i < this.spaces.length; i++) {
             this.spaces[i] = [];
         }
+    } 
+
+    public addUnit(unit: Unit) {
+        this.spaces[unit.getOwner().getPlayerNumber()].push(unit);
     }
 
-    public addEntity(entity: Entity) {
-        this.spaces[entity.getOwner().getPlayerNumber()].push(entity);
-    }
-
-    public getAllEntities(): Array<Entity> {
+    public getAllEntities(): Array<Unit> {
         let res = [];
         for (let i = 0; i < this.spaces.length; i++) {
             for (let j = 0; j < this.spaces[i].length; j++) {
@@ -35,10 +35,10 @@ export class Board {
         return this.spaces[playerNumber];
     }
 
-    public removeEntity(entity:Entity) {
+    public removeUnit(unit:Unit) {
         for (let i = 0; i < this.spaces.length; i++) {
             for (let j = 0; j < this.spaces[i].length; j++) {
-                if (this.spaces[i][j] === entity)
+                if (this.spaces[i][j] === unit)
                     this.spaces[i].splice(j, 1);
             }
         }

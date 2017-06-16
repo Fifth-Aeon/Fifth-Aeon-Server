@@ -1,7 +1,7 @@
 import { parse, stringify } from 'circular-json';
 
 
-import { Game2P } from './game2p';
+import { Game } from './game';
 //import { Sprite } from './sprite';
 import { Player } from './player';
 import { Card } from './card';
@@ -16,7 +16,7 @@ export enum ActionType {
 export class Action {
     constructor(
         public type: ActionType,
-        public actor: Entity,
+        public actor: Unit,
         public row: number,
         public col: number,
         public executeAction: () => void
@@ -25,18 +25,12 @@ export class Action {
 
 export class Event { }
 
-function executeMove() {
-    this.actor.move(this.row, this.col);
-}
 
-function executeAttack() {
-    this.actor.attack(this.row, this.col);
-}
 
-export class Entity extends Card {
+export class Unit extends Card {
     // Board 
     private cardDataId: string;
-    private parent: Game2P;
+    private parent: Game;
 
     // Stats
     private life: number;
@@ -50,18 +44,18 @@ export class Entity extends Card {
     private modifiers: Modifier[];
     private events: EventGroup;
 
-    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers:Modifier[] = [], damage: number = 1, life: number = 1) {
+    constructor(name: string = 'nameles', cost: Resource = new Resource(), minionModifiers: Modifier[] = [], damage: number = 1, life: number = 1) {
         super(name, cost)
         this.events = new EventGroup();
         this.exausted = true;
         this.life = life;
         this.damage = damage;
         this.maxLife = life;
-        this.entity = true;
+        this.unit = true;
         this.modifiers = minionModifiers;
     }
 
-    public setParent(parent: Game2P) {
+    public setParent(parent: Game) {
         this.parent = parent;
     }
 
@@ -69,31 +63,16 @@ export class Entity extends Card {
         return this.owner;
     }
 
-    public play(game: Game2P) {
+    public play(game: Game) {
         super.play(game);
-        game.playEntity(this, 0);
+        game.playUnit(this, 0);
     }
 
     public addModifier(mod: Modifier) {
         this.modifiers.push(mod);
-        console.log('apply', mod, 'to', this);
         mod.apply(this);
-        console.log('result', this);
     }
-
-    public newInstance(): Card {
-        let clone = new Entity(this.name, this.cost, this.modifiers, this.damage, this.life);
-        //clone.cardDataId = cardForm.dataId;
-        let props = [
-            'parent', 'sprite', 'playerControlled', 'row', 'col',
-            'life', 'maxLife', 'damage',
-            'movesPerTurn', 'moves', 'moveSpeed', 'attacksPerTurn', 'attacks'];
-        props.forEach(prop => {
-            clone[prop] = this[prop];
-        });
-        clone.id = Math.random().toString();
-        return clone;
-    }
+ 
 
     public refresh() {
         this.exausted = false;
@@ -106,7 +85,7 @@ export class Entity extends Card {
     }
 
     public getPossibleAcitons(): Array<Action> {
-        let actions:Action[] = [];
+        let actions: Action[] = [];
 
         if (this.canActivate()) {
 
@@ -123,7 +102,7 @@ export class Entity extends Card {
         return stringify(this);
     }
 
-    public fight(target: Entity) {
+    public fight(target: Unit) {
         // Trigger an attack event
         let damage = this.events.trigger(EventType.onAttack, this.events.makeParams({
             damage: this.damage,
@@ -143,11 +122,11 @@ export class Entity extends Card {
         }
     }
 
-    public dealDamage(target: Entity, amount: number) {
+    public dealDamage(target: Unit, amount: number) {
         target.takeDamage(amount);
     }
 
     public die() {
-        this.parent.removeEntity(this);
+        this.parent.removeUnit(this);
     }
 }

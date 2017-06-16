@@ -1,7 +1,7 @@
 import { Card } from './card';
 import { sample, remove } from 'lodash';
 import { GameFormat } from './gameFormat';
-import { Game2P } from './game2p';
+import { Game } from './game';
 import { Resource } from './resource';
 
 
@@ -76,7 +76,7 @@ export class Player {
         }) || null;
     }
 
-    public playCard(game: Game2P, card: Card) {
+    public playCard(game: Game, card: Card) {
         remove(this.hand, (toRem) => toRem === card);
         card.play(game);
     }
@@ -88,6 +88,8 @@ export class Player {
     public drawCard() {
         let drawn = sample(this.deck);
         remove(this.deck, drawn);
+        if (!drawn)
+            return;
         //drawn.owner = this;
         this.hand.push(drawn);
     }

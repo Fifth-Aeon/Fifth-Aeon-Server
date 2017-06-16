@@ -1,4 +1,4 @@
-import { Entity, Action } from './entity';
+import { Unit, Action } from './unit';
 import { Queue } from 'typescript-collections';
 
 /*
@@ -16,7 +16,7 @@ export const init2dArray = (rows: number, cols: number) => {
 }
 
 export class Board {
-    cells: Array<Array<Entity>>;
+    cells: Array<Array<Unit>>;
     rows: number;
     cols: number;
     dataId: string;
@@ -33,7 +33,7 @@ export class Board {
         }
     }
 
-    getAllEntities(): Array<Entity> {
+    getAllEntities(): Array<Unit> {
         let res = [];
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
@@ -45,10 +45,10 @@ export class Board {
     }
 
     moveCharacter(startRow: number, startCol: number, endRow: number, endCol: number) {
-        let entity = this.cells[startRow][startCol];
-        if (!entity)
+        let unit = this.cells[startRow][startCol];
+        if (!unit)
             return;
-        this.cells[endRow][endCol] = entity;
+        this.cells[endRow][endCol] = unit;
         this.cells[startRow][startCol] = null
     }
 
@@ -75,10 +75,10 @@ export class Board {
     }
 
     isPathable(player: boolean, cord: BoardCoordinate) {
-        let entity = this.cells[cord.row][cord.col];
-        if (!entity)
+        let unit = this.cells[cord.row][cord.col];
+        if (!unit)
             return true;
-        return entity.playerControlled == player;
+        return unit.playerControlled == player;
     }
 
     breadthFirstSearch(player: boolean, row: number, col: number): SearchResult {

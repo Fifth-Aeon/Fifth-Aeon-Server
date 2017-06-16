@@ -1,5 +1,5 @@
 export enum GameDataType {
-    number, string, entity, minion, general, player, void
+    number, string, unit, minion, general, player, void
 }
 
 export class Variable {
@@ -40,7 +40,7 @@ const damageEffect = new Expression(
     GameDataType.void,
     new Map<string, GameDataType>([
         ['amount', GameDataType.number],
-        ['target', GameDataType.entity],
+        ['target', GameDataType.unit],
     ]),
     `<target>.takeDamage(this.amount);`
 )

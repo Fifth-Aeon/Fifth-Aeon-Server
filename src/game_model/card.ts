@@ -1,8 +1,8 @@
 import { parse, stringify } from 'circular-json';
 
-import { Entity, Action, ActionType } from './entity';
+import { Unit, Action, ActionType } from './unit';
 import { Resource } from './resource';
-import { Game2P } from './game2p';
+import { Game } from './game';
 import { Player } from './player';
 import { Mechanic } from './mechanics';
 import { remove } from 'lodash';
@@ -18,7 +18,7 @@ export class Card implements Storable {
     protected mechanics: any[];
 
     protected cost: Resource;
-    protected entity = false;
+    protected unit = false;
     protected owner: Player;
 
     protected dataId: string;
@@ -50,7 +50,7 @@ export class Card implements Storable {
     }
 
     public isEntiy(): boolean {
-        return this.entity;
+        return this.unit;
     }
 
     public toString(): string {
@@ -79,17 +79,17 @@ export class Card implements Storable {
         return clone;
     }
 
-    public play(game: Game2P) {
+    public play(game: Game) {
         //this.owner.mana -= this.cost;
     }
 
-    public getActions(battle: Game2P) {
+    public getActions(battle: Game) {
         let entities = battle.getCurrentPlayerEntities();
         let targets = [];
         return [];
         /*
-        entities.forEach(entity => {
-            battle.board.getNeighbors(entity.row, entity.col, true).forEach(neighbor => {
+        entities.forEach(unit => {
+            battle.board.getNeighbors(unit.row, unit.col, true).forEach(neighbor => {
                 targets.push(neighbor);
             });
         })

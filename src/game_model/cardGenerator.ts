@@ -1,5 +1,5 @@
 import { Card } from './card';
-import { Entity } from './entity';
+import { Unit } from './unit';
 import { Resource } from './resource';
 import { sample } from 'lodash';
 import { store } from './store';
@@ -15,7 +15,7 @@ function randInt(low: number, high: number): number {
 }
 
 export class CardGenerator {
-    private options: Array<{ cost: number, effect: (proto:any) => void }> = [];
+    private options: Array<{ cost: number, effect: (proto: any) => void }> = [];
     constructor() {
         this.options.push({ cost: 1, effect: (card) => card.life++ });
         this.options.push({ cost: 1, effect: (card) => card.damage++ });
@@ -41,12 +41,12 @@ export class CardGenerator {
         }
 
         while (points > 0) {
-            let next = sample(this.options);
-            points-= next.cost;
-            next.effect(proto);
-        }
+            let next = sample(this.options) || { cost: 1, effect:() => null};
+        points -= next.cost;
+        next.effect(proto);
+    }
 
-        let card =  new Entity(`Gen ${cost}-${rarity}`, new Resource(cost), [], proto.damage, proto.life);
-        return card;
+        let card = new Unit(`Gen ${cost}-${rarity}`, new Resource(cost), [], proto.damage, proto.life);
+return card;
     }
 }

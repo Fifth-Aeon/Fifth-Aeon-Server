@@ -3,7 +3,7 @@ import { Board } from './board';
 import { Player } from './player';
 import { Card } from './card';
 import { Modifier } from './modifier';
-import { Entity, Action } from './entity';
+import { Unit, Action } from './unit';
 import { GameFormat } from './gameFormat';
 import { CardGenerator } from './cardGenerator';
 import { Resource } from './resource';
@@ -40,7 +40,7 @@ export class GameEvent {
 }
 
 type actionCb = (act: GameAction) => boolean;
-export class Game2P {
+export class Game {
     public id: string;
     private board: Board;
     private turn: number;
@@ -52,8 +52,8 @@ export class Game2P {
     private lastPhase: GamePhase;
     private actionHandelers: Map<GameActionType, actionCb>
     private events: GameEvent[];
-    private attackers: Entity[];
-    private blockers: [Entity, Entity][];
+    private attackers: Unit[];
+    private blockers: [Unit, Unit][];
 
 
     constructor(format = new GameFormat()) {
@@ -84,9 +84,9 @@ export class Game2P {
         return player.queryHand(query);
     }
 
-    private resolvePlayerUnity(query: string, player: Player): Entity {
+    private resolvePlayerUnity(query: string, player: Player): Unit {
         let options = this.board.getPlayerEntities(player.getPlayerNumber());
-        return player.queryCards(query, options) as Entity;
+        return player.queryCards(query, options) as Unit;
     }
 
     private playCard(act: GameAction): boolean {
@@ -107,7 +107,7 @@ export class Game2P {
             return false;
         this.attackers = act.params['attackers']
             .map((query: string) => this.resolvePlayerUnity(query, player))
-            .filter((entity: Entity) => entity);
+            .filter((unit: Unit) => unit);
         console.log(act.params['attackers'], this.attackers);
         this.phase = GamePhase.combat
         this.addGameEvent(new GameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
@@ -124,7 +124,7 @@ export class Game2P {
                 this.resolvePlayerUnity(block[0], op),
                 this.resolvePlayerUnity(block[1], player)
             ])
-            .filter((block: [Entity, Entity]) => block[0] && block[1]);
+            .filter((block: [Unit, Unit]) => block[0] && block[1]);
         this.addGameEvent(new GameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
         this.resolveCombat();
         return true;
@@ -189,15 +189,15 @@ export class Game2P {
         this.actionHandelers.set(type, cb.bind(this));
     }
 
-    public removeEntity(entity: Entity) {
-        this.board.removeEntity(entity);
+    public removeUnit(unit: Unit) {
+        this.board.removeUnit(unit);
     }
 
     public getPlayerSummary(playerNum: number): string {
         let currPlayer = this.players[playerNum];
         let otherPlayer = this.players[this.getOtherPlayerNumber(playerNum)];
-        let playerBoard = this.board.getPlayerEntities(playerNum).map(entity => entity.toString()).join("\n");
-        let enemyBoard = this.board.getPlayerEntities(this.getOtherPlayerNumber(playerNum)).map(entity => entity.toString()).join("\n");
+        let playerBoard = this.board.getPlayerEntities(playerNum).map(unit => unit.toString()).join("\n");
+        let enemyBoard = this.board.getPlayerEntities(this.getOtherPlayerNumber(playerNum)).map(unit => unit.toString()).join("\n");
         return `Turn ${this.turnNum} - it is your ${this.isPlayerTurn(playerNum) ? 'turn' : 'opponent\'s turn'}
 You have ${currPlayer.getLife()} life and your oponent has ${otherPlayer.getLife()} life.
 ${currPlayer.sumerize()}
@@ -213,21 +213,21 @@ ${playerBoard}`
             this.players[i].drawCards(this.format.initialDraw[i]);
         }
         this.players[this.turn].startTurn();
-        this.getCurrentPlayerEntities().forEach(entity => entity.refresh());
+        this.getCurrentPlayerEntities().forEach(unit => unit.refresh());
         this.phase = GamePhase.play1;
     }
 
-    public playEntity(ent: Entity, owner: number) {
-        this.addEntity(ent, owner);
+    public playUnit(ent: Unit, owner: number) {
+        this.addUnit(ent, owner);
     }
 
-    public addEntity(minion: Entity, owner: number) {
+    public addUnit(minion: Unit, owner: number) {
         minion.setParent(this);
-        this.board.addEntity(minion);
+        this.board.addUnit(minion);
     }
 
     public getCurrentPlayerEntities() {
-        return this.board.getAllEntities().filter(entity => this.isPlayerTurn(entity.getOwner().getPlayerNumber()));
+        return this.board.getAllEntities().filter(unit => this.isPlayerTurn(unit.getOwner().getPlayerNumber()));
     }
 
     public getOtherPlayerNumber(playerNum: number): number {
@@ -238,7 +238,7 @@ ${playerBoard}`
         this.turn = this.getOtherPlayerNumber(this.turn);
         this.turnNum++;
         let currentPlayerEntities = this.getCurrentPlayerEntities();
-        currentPlayerEntities.forEach(entity => entity.refresh());
+        currentPlayerEntities.forEach(unit => unit.refresh());
         this.addGameEvent(new GameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
         this.attackers = [];
         this.blockers = [];

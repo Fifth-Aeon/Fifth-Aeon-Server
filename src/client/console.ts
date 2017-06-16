@@ -1,11 +1,11 @@
-import { ClientMessenger } from './messenger';
-import { MessageType, Message } from './message';
-import { Game2P, GameAction, GameActionType, GameEvent } from './game_model/game2p';
+import { Messenger } from './clientMessenger';
+import { MessageType, Message } from '../message';
+import { Game, GameAction, GameActionType, GameEvent } from '../game_model/game';
 
 import * as readline from 'readline';
-import * as debug from 'debug';
+import * as debug from 'debug'; 
 
-const messenger = new ClientMessenger(2222);
+const messenger = new Messenger();
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout

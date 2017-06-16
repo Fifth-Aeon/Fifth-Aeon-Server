@@ -32,8 +32,9 @@ export class Server {
         let expressServer = this.app.listen(port, () => {
             console.log('Server started on port', port);
         });
-
+        
         this.messenger = new ServerMessenger(expressServer);
+        this.errors = new ErrorHandeler(this.messenger);
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
         this.messenger.addHandeler(MessageType.AnonymousLogin, (msg) => this.anonLogin(msg));
         this.messenger.onMessage = (msg: Message) => {

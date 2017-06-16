@@ -1,9 +1,9 @@
 import { store, Storable } from './store';;
 import { Collections, Type, Types } from './dataTypes';
 import { Player } from './player';
-import { Game2P } from './game2p';
+import { Game } from './game';
 import { Card } from './card';
-import { Entity } from './entity';
+import { Unit } from './unit';
 
 
 export enum targetNumber {
@@ -15,13 +15,13 @@ export enum targetAlliance {
 }
 
 export enum targetType {
-    self, entity, player, all
+    self, unit, player, all
 }
 
 export class Targeter {
     constructor(private type:targetType, private alliance: targetAlliance, private number: targetNumber) {}
 
-    public getTargets(game: Game2P): Array<Entity | Player> {
+    public getTargets(game: Game): Array<Unit | Player> {
         return [];
     }
 }
@@ -31,12 +31,12 @@ export enum Event {
 
 }
 
-type effect = (targets:Entity | Player, params: Map<string, any>) => void;
+type effect = (targets:Unit | Player, params: Map<string, any>) => void;
 
 
 export class Mechanic {
     protected params: Map<string, Type>;
-    protected requiresEntity: boolean;
+    protected requiresUnit: boolean;
     protected targeter: Targeter;
     protected effects: {
         play:Array<effect>
@@ -51,7 +51,7 @@ export class Mechanic {
         this.params.set(name, type);
     }
 
-    public onPlay(game: Game2P) {
+    public onPlay(game: Game) {
         let targets = this.targeter.getTargets(game);
         targets.forEach(target => {
             this.effects.play.forEach(effect => {

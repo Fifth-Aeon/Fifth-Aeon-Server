@@ -3,11 +3,11 @@ import { store } from '../store';
 import { Collections, Type, Types } from '../dataTypes';
 import { Player } from '../player';
 import { Card } from '../card';
-import { Entity } from '../entity';
+import { Unit } from '../unit';
 
 
 /**
- * Basic mechanic that deals n damage to a target player or entity
+ * Basic mechanic that deals n damage to a target player or unit
  */
 let damage = new Mechanic(targetType.all);
 damage.addParam('amount', new Type(Types.integer));
@@ -31,12 +31,12 @@ store.registerMechanic('drawCards', draw);
 
 
 /**
- * Basic mechanic that kills an entity
+ * Basic mechanic that kills an unit
  */
-let kill = new Mechanic(targetType.entity);
+let kill = new Mechanic(targetType.unit);
 kill.addParam('amount', new Type(Types.integer));
 kill.addEffect((target, params) => {
-    target = target as Entity;
+    target = target as Unit;
     target.die();
 });
 kill.setText('{target} draws {amount} cards.');

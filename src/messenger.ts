@@ -6,6 +6,8 @@ import { Queue } from 'typescript-collections';
 import { Message, MessageType } from './message';
 import * as express from 'express';
 
+import {parse, stringify} from 'circular-json';
+
 
 /**
  * Abstract class used to communicate via websockets. Can be used by the client or server. 
@@ -25,7 +27,7 @@ abstract class Messenger {
 
     private readMessage(data: any): Message | null {
         try {
-            let parsed = JSON.parse(data);
+            let parsed = parse(data);
             parsed.type = MessageType[parsed.type];
             return parsed as Message;
         } catch (e) {
@@ -51,7 +53,7 @@ abstract class Messenger {
     }
 
     protected makeMessage(messageType: MessageType, data: string | object): string {
-        return JSON.stringify({
+        return stringify({
             type: MessageType[messageType],
             data: data,
             source: this.id
@@ -93,7 +95,7 @@ export class ServerMessenger extends Messenger {
         this.id = 'server';
         this.ws.on('connection', (ws) => {
             ws.on('message', (data) => {
-                let msg = JSON.parse(data) as Message;
+                let msg = parse(data.toString()) as Message;
                 this.connections.set(msg.source, ws);
             });
             this.makeMessageHandler(ws);
@@ -173,26 +175,5 @@ export class ServerMessenger extends Messenger {
             } else
                 console.error('ws closed, message lost');
         }
-    }
-}
-
-/**
- * Version of the messenger appropriate for use by a (nodejs) client.
- */
-export class ClientMessenger extends Messenger {
-    private ws: WebSocket;
-
-    public sendMessageToServer(messageType: MessageType, data: object) {
-        this.sendMessage(messageType, data, this.ws);
-    }
-
-    constructor(port: number) {
-        super(false);
-        this.ws = new WebSocket('ws://localhost:' + port);
-        this.id = getToken();
-        this.ws.on('open', () => {
-            console.log(this.name + ':', 'Conneciton opened');
-        });
-        this.makeMessageHandler(this.ws);
     }
 }

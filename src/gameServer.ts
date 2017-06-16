@@ -1,18 +1,18 @@
 import { ServerMessenger} from './messenger'
 import { Message, MessageType } from './message';
 
-import { Game2P, GameAction } from './game_model/game2p';
+import { Game, GameAction } from './game_model/game';
 import {GameFormat} from './game_model/gameFormat';
 import { Server } from './server';
 import { Account } from './account';
 
 export class GameServer {
     private playerAccounts: Account[] = [];
-    private game: Game2P;
+    private game: Game;
     private id: string;
 
     constructor(private messenger: ServerMessenger, private server: Server, id: string, player1: Account, player2: Account) {
-        this.game = new Game2P(new GameFormat());
+        this.game = new Game(new GameFormat());
         this.id = id;
         this.playerAccounts.push(player1);
         this.playerAccounts.push(player2);

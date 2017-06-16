@@ -1,4 +1,4 @@
-import { Entity } from './entity';
+import { Unit } from './unit';
 import { GameEvent } from './game-event';
 
 export class Modifier {
@@ -29,7 +29,7 @@ export class Modifier {
     }
 
 
-    apply(target: Entity) {
+    apply(target: Unit) {
         /*
         target.damage += this.damage;
         target.maxLife += this.maxLife;
@@ -40,7 +40,7 @@ export class Modifier {
         */
     }
 
-    remove(target: Entity) {
+    remove(target: Unit) {
         /*
         target.damage -= this.damage;
         target.maxLife -= this.maxLife;
