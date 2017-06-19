@@ -1,16 +1,13 @@
 import * as WebSocket from 'ws';
-
+import {parse, stringify} from 'circular-json';
 
 import { getToken } from './tokens';
 import { Queue } from 'typescript-collections';
 import { Message, MessageType } from './message';
 import * as express from 'express';
 
-import {parse, stringify} from 'circular-json';
-
-
 /**
- * Abstract class used to communicate via websockets. Can be used by the client or server. 
+ * Abstract class used to communicate via websockets.
  * 
  * @class Messenger
  */
@@ -125,7 +122,6 @@ export class ServerMessenger extends Messenger {
             return;
         let ws = this.connections.get(token);
         while (!queue.isEmpty()) {
-            console.log('sending enqued message');
             ws.send(queue.dequeue());
         }
     }

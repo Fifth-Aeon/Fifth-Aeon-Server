@@ -3,7 +3,7 @@ import { MessageType, Message } from '../message';
 import { Game, GameAction, GameActionType, SyncGameEvent } from '../game_model/game';
 
 import * as readline from 'readline';
-import * as debug from 'debug'; 
+
 
 const messenger = new Messenger();
 const rl = readline.createInterface({
@@ -34,7 +34,7 @@ class ConsoleClient {
         messenger.addHandeler(MessageType.ClientError, (msg) => console.error('Error:', msg.data), this);
     }
 
-    private handleGameEvent(event: SyncEvent) {
+    private handleGameEvent(event: SyncGameEvent) {
         console.log('ev', event);
     }
 

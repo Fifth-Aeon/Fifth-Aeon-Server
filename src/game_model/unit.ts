@@ -5,7 +5,7 @@ import { Game } from './game';
 //import { Sprite } from './sprite';
 import { Player } from './player';
 import { Card } from './card';
-import { EventGroup, EventType } from './game-event';
+import { EventGroup, EventType } from './gameEvent';
 import { Resource } from './resource';
 
 export enum ActionType {
@@ -43,6 +43,7 @@ export abstract class Unit extends Card {
         this.events = new EventGroup();
         this.exausted = true;
         this.unit = true;
+        this.life = this.life || this.maxLife;
     }
 
     public getEvents() {

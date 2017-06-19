@@ -4,17 +4,11 @@ import { Player } from './player';
 import { Card } from './card';
 import { Unit, Action } from './unit';
 import { GameFormat } from './gameFormat';
-import { CardGenerator } from './cardGenerator';
 import { Resource } from './resource';
-import { GameEvent, EventType } from './game-event';
+import { GameEvent, EventType } from './gameEvent';
+import { data } from './gameData';
 
 import { Serialize, Deserialize } from 'cerialize';
-
-let testGen = new CardGenerator();
-let recipe = {
-    rarityValues: [],
-    statsPerPoint: 1
-}
 
 enum GamePhase {
     play1, combat, play2, end, responceWindow
@@ -24,7 +18,9 @@ enum GamePhase {
 const game_phase_count = 4;
 
 export enum GameActionType {
-    mulligan, playResource, playCard, declareAttackers, declareBlockers, distributeDamage, pass, concede, activateAbility
+    mulligan, playResource, playCard, pass, concede, activateAbility,
+    declareAttackers, declareBlockers, distributeDamage, 
+    declareTarget
 }
 
 export enum GameEventType {
@@ -63,8 +59,8 @@ export class Game {
         this.turnNum = 1;
         this.actionHandelers = new Map<GameActionType, actionCb>();
         this.players = [
-            new Player(testGen.generateCards(recipe, 30), 0, this.format.initalResource[0], this.format.initialLife[0]),
-            new Player(testGen.generateCards(recipe, 30), 1, this.format.initalResource[1], this.format.initialLife[1])
+            new Player(data.getRandomDeck(30), 0, this.format.initalResource[0], this.format.initialLife[0]),
+            new Player(data.getRandomDeck(30), 1, this.format.initalResource[1], this.format.initialLife[1])
         ];
         this.events = [];
         this.attackers = [];

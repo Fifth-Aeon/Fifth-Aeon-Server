@@ -22,11 +22,15 @@ export abstract class Card {
     @serialize protected unit = false;
     @serialize protected owner: Player;
     @serialize protected dataId: string;
-    
+
     protected targeter: Targeter<any>;
 
     constructor() {
         this.id = Math.random().toString(16)
+    }
+
+    public getTargeter() {
+        return this.targeter;
     }
 
     public setOwner(owner: Player) {

@@ -1,5 +1,6 @@
 import { Mechanic } from './mechanic';
 import { Card } from './card';
+import { sample } from 'lodash';
 
 interface CardConstructor {
     new (): Card;
@@ -17,6 +18,17 @@ class GameData {
         if (!constructor)
             throw Error('No card with id: ' + id);
         return new constructor();
+    }
+
+    public getRandomDeck(size: number): Card[] {
+        let deck = [];
+        let cards = Array.from(this.cards.values());
+        for (let i = 0; i < size; i++) {
+            let constr = sample(cards);
+            if (constr)
+                deck.push(new constr());
+        }
+        return deck;
     }
 }
 

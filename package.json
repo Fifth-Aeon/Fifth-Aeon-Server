@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "test": "mocha --reporter spec --compilers ts:ts-node/register"
-  },
+    "test": "mocha --reporter spec --compilers ts:ts-node/register"  },
   "keywords": [],
   "author": "William Ritson",
   "license": "",
@@ -25,10 +24,10 @@
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "gulp": "^3.9.1",
-    "gulp-typescript": "^3.1.1",
+    "gulp-typescript": "^3.1.7",
     "mocha": "^3.1.2",
     "ts-node": "^1.6.1",
-    "typescript": "^2.2.2"
+    "typescript": "^2.3.4"
   },
   "dependencies": {
     "body-parser": "^1.15.2",

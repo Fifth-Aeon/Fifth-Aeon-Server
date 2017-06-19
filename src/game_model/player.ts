@@ -77,12 +77,12 @@ export class Player {
     }
 
     public playCard(game: Game, card: Card) {
-        remove(this.hand, (toRem) => toRem === card);
+        remove(this.hand, (toRem:Card) => toRem === card);
         card.play(game);
     }
 
     public removeCard(card: Card) {
-        remove(this.hand, (toRem) => toRem === card);
+        remove(this.hand, (toRem:Card) => toRem === card);
     }
 
     public drawCard() {
