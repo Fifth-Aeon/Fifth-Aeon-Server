@@ -1,7 +1,5 @@
 import * as Ajv from 'ajv';
 
-
-
 const pointSchema = {
     "type": "object",
     "properties": {

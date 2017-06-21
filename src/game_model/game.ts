@@ -1,8 +1,7 @@
-import { Dictionary } from 'typescript-collections';
 import { Board } from './board';
 import { Player } from './player';
 import { Card } from './card';
-import { Unit, Action } from './unit';
+import { Unit } from './unit';
 import { GameFormat } from './gameFormat';
 import { Resource } from './resource';
 import { GameEvent, EventType } from './gameEvent';
@@ -14,13 +13,12 @@ enum GamePhase {
     play1, combat, play2, end, responceWindow
 }
 
-
 const game_phase_count = 4;
 
 export enum GameActionType {
     mulligan, playResource, playCard, pass, concede, activateAbility,
-    declareAttackers, declareBlockers, distributeDamage, 
-    declareTarget
+    declareAttackers, declareBlockers, distributeDamage,
+    declareTarget, Quit
 }
 
 export enum GameEventType {
@@ -39,28 +37,47 @@ export class SyncGameEvent {
 
 type actionCb = (act: GameAction) => boolean;
 export class Game {
+    // Id of the game on the server
     public id: string;
+    // A board containing units in play
     private board: Board;
+    // The number of player whose turn it currently is
     private turn: number;
+    // The number of turns that have passed from the games start
     private turnNum: number;
+    // The players playing the game
     private players: Player[];
+    // The format of the game
     private format: GameFormat;
+    // The phase of the current players turn (eg main phase, attack phase)
     private phase: GamePhase;
+    // The previous phase (used to return from responce phases)
     private lastPhase: GamePhase;
+    // A table of handlers used to respond to actions taken by players
     private actionHandelers: Map<GameActionType, actionCb>
+    // A list of all events that have taken place this game and need to be sent to clients
     private events: SyncGameEvent[];
+    // A list of  units currently attacking
     private attackers: Unit[];
+    // A list of blocks by the defending player
     private blockers: [Unit, Unit][];
 
-
+    /**
+     * Constructs a game given a format. The format
+     * informs how the game is initlized eg how
+     * much health each player starts with.
+     * 
+     * @param {any} [format=new GameFormat()] 
+     * @memberof Game
+     */
     constructor(format = new GameFormat()) {
         this.format = format;
         this.board = new Board(this.format.playerCount, this.format.boardSize);
         this.turnNum = 1;
         this.actionHandelers = new Map<GameActionType, actionCb>();
         this.players = [
-            new Player(data.getRandomDeck(30), 0, this.format.initalResource[0], this.format.initialLife[0]),
-            new Player(data.getRandomDeck(30), 1, this.format.initalResource[1], this.format.initialLife[1])
+            new Player(data.getRandomDeck(format.minDeckSize), 0, this.format.initalResource[0], this.format.initialLife[0]),
+            new Player(data.getRandomDeck(format.minDeckSize), 1, this.format.initalResource[1], this.format.initialLife[1])
         ];
         this.events = [];
         this.attackers = [];
@@ -73,15 +90,59 @@ export class Game {
         this.addActionHandeler(GameActionType.declareBlockers, this.declareBlockers);
     }
 
-    public getWinner() {
-        return -1;
+    // Syncronization --------------------------------------------------------
+
+    /**
+     * Syncs an event that happened on the server into the state of this game model
+     * 
+     * @param {number} playerNumber 
+     * @param {SyncGameEvent} event 
+     * @memberof Game
+     */
+    public syncServerEvent(playerNumber: number, event: SyncGameEvent) {
+        // TODO
+    }
+
+    /**
+     * 
+     * Handles a players action and returns a list of events that
+     * resulted from that aciton.
+     * 
+     * @param {GameAction} action 
+     * @returns {SyncGameEvent[]} 
+     * @memberof Game
+     */
+    public handleAction(action: GameAction): SyncGameEvent[] {
+        let mark = this.events.length;
+        let handeler = this.actionHandelers.get(action.type);
+        if (!handeler)
+            return [];
+        let sig = handeler(action);
+        return this.events.slice(mark);
+    }
+
+    private addActionHandeler(type: GameActionType, cb: actionCb) {
+        this.actionHandelers.set(type, cb.bind(this));
+    }
+
+
+    // Game Logic --------------------------------------------------------
+
+    public startGame() {
+        this.turn = 0;
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].drawCards(this.format.initialDraw[i]);
+        }
+        this.players[this.turn].startTurn();
+        this.getCurrentPlayerEntities().forEach(unit => unit.refresh());
+        this.phase = GamePhase.play1;
     }
 
     private resolveCard(query: string, player: Player): Card | null {
         return player.queryHand(query);
     }
 
-    private resolvePlayerUnity(query: string, player: Player): Unit {
+    private resolvePlayerUnit(query: string, player: Player): Unit {
         let options = this.board.getPlayerEntities(player.getPlayerNumber());
         return player.queryCards(query, options) as Unit;
     }
@@ -103,11 +164,10 @@ export class Game {
         if (!this.isPlayerTurn(act.player) || this.phase !== GamePhase.play1)
             return false;
         this.attackers = act.params['attackers']
-            .map((query: string) => this.resolvePlayerUnity(query, player))
+            .map((query: string) => this.resolvePlayerUnit(query, player))
             .filter((unit: Unit) => unit);
-        console.log(act.params['attackers'], this.attackers);
         this.phase = GamePhase.combat
-        this.addGameEvent(new SyncGameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toJson()) }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.attack, { attacking: this.attackers.map(e => e.toString()) }));
         return true;
     }
 
@@ -118,11 +178,11 @@ export class Game {
             return false;
         this.blockers = act.params['blockers']
             .map((block: any) => [
-                this.resolvePlayerUnity(block[0], op),
-                this.resolvePlayerUnity(block[1], player)
+                this.resolvePlayerUnit(block[0], op),
+                this.resolvePlayerUnit(block[1], player)
             ])
             .filter((block: [Unit, Unit]) => block[0] && block[1]);
-        this.addGameEvent(new SyncGameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toJson())) }));
+        this.addGameEvent(new SyncGameEvent(GameEventType.block, { blocks: this.blockers.map(b => b.map(e => e.toString())) }));
         this.resolveCombat();
         return true;
     }
@@ -168,50 +228,12 @@ export class Game {
         this.events.push(event);
     }
 
-    public handleAction(action: GameAction): SyncGameEvent[] {
-        console.log('handle', GameActionType[action.type], action.params);
-        let mark = this.events.length;
-        let handeler = this.actionHandelers.get(action.type);
-        if (!handeler)
-            return [];
-        let sig = handeler(action);
-        return this.events.slice(mark);
-    }
-
     public isPlayerTurn(player: number) {
         return this.turn === player;
     }
 
-    private addActionHandeler(type: GameActionType, cb: actionCb) {
-        this.actionHandelers.set(type, cb.bind(this));
-    }
-
     public removeUnit(unit: Unit) {
         this.board.removeUnit(unit);
-    }
-
-    public getPlayerSummary(playerNum: number): string {
-        let currPlayer = this.players[playerNum];
-        let otherPlayer = this.players[this.getOtherPlayerNumber(playerNum)];
-        let playerBoard = this.board.getPlayerEntities(playerNum).map(unit => unit.toString()).join("\n");
-        let enemyBoard = this.board.getPlayerEntities(this.getOtherPlayerNumber(playerNum)).map(unit => unit.toString()).join("\n");
-        return `Turn ${this.turnNum} - it is your ${this.isPlayerTurn(playerNum) ? 'turn' : 'opponent\'s turn'}
-You have ${currPlayer.getLife()} life and your oponent has ${otherPlayer.getLife()} life.
-${currPlayer.sumerize()}
-Your Board
-${playerBoard}
-Enemy Board
-${playerBoard}`
-    }
-
-    public startGame() {
-        this.turn = 0;
-        for (let i = 0; i < this.players.length; i++) {
-            this.players[i].drawCards(this.format.initialDraw[i]);
-        }
-        this.players[this.turn].startTurn();
-        this.getCurrentPlayerEntities().forEach(unit => unit.refresh());
-        this.phase = GamePhase.play1;
     }
 
     public playUnit(ent: Unit, owner: number) {
@@ -226,6 +248,22 @@ ${playerBoard}`
         this.board.addUnit(unit);
     }
 
+    public nextTurn() {
+        this.turn = this.getOtherPlayerNumber(this.turn);
+        this.turnNum++;
+        let currentPlayerEntities = this.getCurrentPlayerEntities();
+        currentPlayerEntities.forEach(unit => unit.refresh());
+        this.addGameEvent(new SyncGameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
+        this.attackers = [];
+        this.blockers = [];
+    }
+
+    // Getters and setters ---------------------------------------------------
+
+    public getPlayer(playerNum: number) {
+        return this.players[playerNum];
+    }
+
     public getBoard() {
         return this.board;
     }
@@ -238,13 +276,16 @@ ${playerBoard}`
         return (playerNum + 1) % this.players.length
     }
 
-    public nextTurn() {
-        this.turn = this.getOtherPlayerNumber(this.turn);
-        this.turnNum++;
-        let currentPlayerEntities = this.getCurrentPlayerEntities();
-        currentPlayerEntities.forEach(unit => unit.refresh());
-        this.addGameEvent(new SyncGameEvent(GameEventType.turnStart, { player: this.turn, turnNum: this.turnNum }));
-        this.attackers = [];
-        this.blockers = [];
+    /**
+    * 
+    * Returns the number of the player who has won the game.
+    * If it is still in progress it will return -1;
+    * 
+    * @returns 
+    * @memberof Game
+    */
+    public getWinner() {
+        // TODO, check for winner
+        return -1;
     }
 }

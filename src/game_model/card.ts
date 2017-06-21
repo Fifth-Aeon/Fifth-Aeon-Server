@@ -1,14 +1,11 @@
 import { serialize, serializeAs } from 'cerialize';
 
-
-import { Unit, Action, ActionType } from './unit';
 import { Resource } from './resource';
 import { Game } from './game';
 import { Player } from './player';
 import { Mechanic } from './mechanic';
 import { Targeter } from './targeter';
 import { remove } from 'lodash';
-import { Collections, Type, Types } from './dataTypes'
 
 
 export abstract class Card {
@@ -16,7 +13,7 @@ export abstract class Card {
     @serialize protected id: string;
     @serialize protected set: string;
     @serialize protected rarity: number;
-    @serializeAs(Mechanic) protected mechanics: Mechanic[];
+    @serializeAs(Mechanic) protected mechanics: Mechanic[] = [];
 
     @serializeAs(Resource) protected cost: Resource;
     @serialize protected unit = false;
@@ -27,6 +24,14 @@ export abstract class Card {
 
     constructor() {
         this.id = Math.random().toString(16)
+    }
+
+    public play(game: Game) {
+        //this.owner.mana -= this.cost;
+    }
+
+    public getText():string {
+        return this.mechanics.map(mechanic => mechanic.getText(this)).join(' ');
     }
 
     public getTargeter() {
@@ -41,7 +46,7 @@ export abstract class Card {
         return this.name;
     }
 
-    public isEntiy(): boolean {
+    public isUnit(): boolean {
         return this.unit;
     }
 
@@ -49,9 +54,7 @@ export abstract class Card {
         return `${this.name}: (${this.cost})`
     }
 
-    public play(game: Game) {
-        //this.owner.mana -= this.cost;
-    }
+
 
     public getActions(battle: Game) {
         let entities = battle.getCurrentPlayerEntities();

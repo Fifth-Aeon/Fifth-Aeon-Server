@@ -1,5 +1,4 @@
-import { Unit, Action } from './unit';
-import { Queue } from 'typescript-collections';
+import { Unit } from './unit';
 
 /**
  * A simple board where each side can place up to a fixed number of units without any positoning.

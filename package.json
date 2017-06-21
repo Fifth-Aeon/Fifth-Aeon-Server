@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "test": "mocha --reporter spec --compilers ts:ts-node/register"  },
+    "test": "mocha --reporter spec --compilers ts:ts-node/register"
+  },
   "keywords": [],
   "author": "William Ritson",
   "license": "",
@@ -30,6 +31,7 @@
     "typescript": "^2.3.4"
   },
   "dependencies": {
+    "ajv": "^5.2.0",
     "body-parser": "^1.15.2",
     "cerialize": "^0.1.15",
     "circular-json": "^0.3.1",

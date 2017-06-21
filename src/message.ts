@@ -11,7 +11,7 @@ export enum MessageType {
     PrivateGameReady,
 
     // In Game
-    Concede, GameEvent, GameAction
+    GameEvent, GameAction
 }
 
 export interface Message {

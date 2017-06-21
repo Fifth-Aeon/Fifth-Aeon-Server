@@ -1,27 +1,8 @@
-import { parse, stringify } from 'circular-json';
-
-
 import { Game } from './game';
-//import { Sprite } from './sprite';
 import { Player } from './player';
 import { Card } from './card';
 import { EventGroup, EventType } from './gameEvent';
 import { Resource } from './resource';
-
-export enum ActionType {
-    move, attack, spell
-}
-
-export class Action {
-    constructor(
-        public type: ActionType,
-        public actor: Unit,
-        public row: number,
-        public col: number,
-        public executeAction: () => void
-    ) { }
-}
-
 
 export abstract class Unit extends Card {
     // Board 
@@ -69,22 +50,8 @@ export abstract class Unit extends Card {
         return this.exausted;
     }
 
-    public getPossibleAcitons(): Array<Action> {
-        let actions: Action[] = [];
-
-        if (this.canActivate()) {
-
-        }
-        return actions;
-    }
-
     public toString() {
         return `${this.name} (${this.cost}) - (${this.damage}/${this.life})`;
-    }
-
-    public toJson() {
-
-        return stringify(this);
     }
 
     public fight(target: Unit) {

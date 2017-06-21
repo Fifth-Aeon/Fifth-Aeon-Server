@@ -12,13 +12,13 @@ export class GameFormat {
     public basicResources: Map<string, Resource> = new Map<string, Resource>();
 
     // Starting Values
-    public initialDraw: number[] = [5, 5]; // Number of cards each player draws on turn 1
+    public initialDraw: number[] = [3, 3]; // Number of cards each player draws on turn 1
     public initialLife: number[] = [25, 25]; // Number of life each player gets on turn 1
     public initalResource: Resource[] = [new Resource(2), new Resource(3)];
 
     // Deckbuilding rules
-    public minCards = 40;
-    public maxCards = 150;
+    public minDeckSize = 20;
+    public maxDeckSize = 50;
     public cardsOfRarity = [3, 3, 2, 1];
 
     constructor() {

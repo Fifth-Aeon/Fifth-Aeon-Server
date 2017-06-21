@@ -2,12 +2,11 @@ import { Mechanic } from './mechanic';
 import { Card } from './card';
 import { sample } from 'lodash';
 
-interface CardConstructor {
-    new (): Card;
-}
+import { CardConstructor, allCards } from './cards/allCards';
+
 
 class GameData {
-    private cards: Map<string, CardConstructor> = new Map<string, CardConstructor>();
+    private cards: Map<string, CardConstructor> = allCards;
 
     public addCardConstructor(id: string, constructor: CardConstructor) {
         this.cards.set(id, constructor);
@@ -25,8 +24,9 @@ class GameData {
         let cards = Array.from(this.cards.values());
         for (let i = 0; i < size; i++) {
             let constr = sample(cards);
-            if (constr)
-                deck.push(new constr());
+            if (!constr)
+                throw new Error("No cards to construct");
+            deck.push(new constr());
         }
         return deck;
     }

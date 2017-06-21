@@ -53,13 +53,10 @@ export class Player {
     }
 
     public drawCards(quantity: number) {
-        console.log('draw', quantity);
         for (let i = 0; i < quantity; i++) {
             this.drawCard();
         }
     }
-
-    
 
     public queryHand(query: string) {
         return this.queryCards(query, this.hand);
