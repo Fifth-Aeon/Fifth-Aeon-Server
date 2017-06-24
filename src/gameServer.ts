@@ -1,6 +1,8 @@
+import { Serialize, Deserialize } from 'cerialize'
+import { Card } from './game_model/card';
+
 import { ServerMessenger } from './messenger'
 import { Message, MessageType } from './message';
-
 import { Game, GameAction } from './game_model/game';
 import { GameFormat } from './game_model/gameFormat';
 import { Server } from './server';
@@ -49,12 +51,19 @@ export class GameServer {
 
     public start() {
         this.game.startGame();
+
         for (let i = 0; i < this.playerAccounts.length; i++) {
-            let playerInfo = this.game.getPlayerSummary(i);
+            let hand = this.game.getPlayer(1 - i).getHand().map((card: Card) => {
+                return {
+                    id: card.getId(),
+                    data: card.getDataId()
+                }
+            });
             this.messenger.sendMessageTo(MessageType.StartGame, {
                 playerNumber: i,
-                startInfo: playerInfo,
-                gameId: this.id
+                gameId: this.id,
+                opponent: this.playerAccounts[1 - i].username,
+                hand: hand
             }, this.playerAccounts[i].token);
         }
     }
