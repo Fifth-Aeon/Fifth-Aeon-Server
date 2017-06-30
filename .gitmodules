@@ -1,0 +1,3 @@
+[submodule "src/game_model"]
+	path = src/game_model
+	url = git@github.com:WilliamRitson/CCG-Model.git
