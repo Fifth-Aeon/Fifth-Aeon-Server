@@ -50,22 +50,20 @@ export class GameServer {
     }
 
     public start() {
-        this.game.startGame();
-
         for (let i = 0; i < this.playerAccounts.length; i++) {
-            let hand = this.game.getPlayer(1 - i).getHand().map((card: Card) => {
-                return {
-                    id: card.getId(),
-                    data: card.getDataId()
-                }
-            });
             this.messenger.sendMessageTo(MessageType.StartGame, {
                 playerNumber: i,
                 gameId: this.id,
                 opponent: this.playerAccounts[1 - i].username,
-                hand: hand
             }, this.playerAccounts[i].token);
         }
+
+        let events = this.game.startGame();
+        this.playerAccounts.forEach(acc => {
+            events.forEach(event => {
+                this.messenger.sendMessageTo(MessageType.GameEvent, event, acc.token);
+            })
+        });
     }
 
     public getName() {
