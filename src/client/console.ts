@@ -39,12 +39,14 @@ class ConsoleClient {
     }
 
     private attack(args: string[]) {
+        /*
         messenger.sendMessageToServer(MessageType.GameAction, {
             type: GameActionType.declareAttackers,
             params: {
                 attackers: args
             }
         });
+        */
     }
 
     private block(block: string[]) {
