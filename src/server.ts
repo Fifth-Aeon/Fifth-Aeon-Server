@@ -10,7 +10,7 @@ import * as os from 'os';
 import * as express from 'express';
 
 // 1 hour
-const cleaningTime = 1000 * 60 * 60 * 1;
+const cleaningTime = 1000 * 60 * 60;
 
 /**
  * Server that holds references to all the components of the app
@@ -48,6 +48,7 @@ export class Server {
     }
 
     private pruneAccount(acc: Account) {
+        console.log('prune', acc.username);
         this.accounts.delete(acc.token);
         this.gameQueue.removeFromQueue(acc.token);
         this.messenger.deleteUser(acc.token);
@@ -61,9 +62,8 @@ export class Server {
         console.log('Pruning acounts');
         let now = Date.now();
         for (let account of this.accounts.values()) {
-            let time = (account.lastUsed.getTime() - now);
+            let time = (now - account.lastUsed.getTime());
             if (time > cleaningTime) {
-                console.log('prune', account.username);
                 this.pruneAccount(account);
             }
         }
