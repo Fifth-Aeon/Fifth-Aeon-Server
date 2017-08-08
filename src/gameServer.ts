@@ -14,7 +14,7 @@ export class GameServer {
     private id: string;
 
     constructor(private messenger: ServerMessenger, private server: Server, id: string, player1: Account, player2: Account) {
-        this.game = new Game(new GameFormat());
+        this.game = new Game(new GameFormat(), false, [player1.deck, player2.deck]);
         this.id = id;
         this.playerAccounts.push(player1);
         this.playerAccounts.push(player2);

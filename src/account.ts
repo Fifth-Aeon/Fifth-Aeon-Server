@@ -1,4 +1,6 @@
 import { NameGenerator } from './nameGenerator';
+import { DeckList } from './game_model/deckList';
+import { GameFormat } from './game_model/gameFormat';
 
 let ng = new NameGenerator();
 
@@ -7,6 +9,7 @@ export class Account {
     token: string;
     gameId: string | null;
     lastUsed: Date;
+    deck: DeckList = new DeckList(new GameFormat());;
 
     constructor(token: string, name: string) {
         this.token = token;

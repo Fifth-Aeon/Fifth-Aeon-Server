@@ -10,7 +10,7 @@ import * as os from 'os';
 import * as express from 'express';
 
 // 1 hour
-const cleaningTime = 1000 * 60 * 60;
+const cleaningTime = 1000 * 60 * 60 * 60;
 
 /**
  * Server that holds references to all the components of the app
@@ -32,11 +32,12 @@ export class Server {
         let expressServer = this.app.listen(port, () => {
             console.log('Server started on port', port);
         });
-        
+
         this.messenger = new ServerMessenger(expressServer);
         this.errors = new ErrorHandeler(this.messenger);
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
         this.messenger.addHandeler(MessageType.AnonymousLogin, (msg) => this.anonLogin(msg));
+        this.messenger.addHandeler(MessageType.SetDeck, (msg) => this.setDeck(msg));
         this.messenger.onMessage = (msg: Message) => {
             let account = this.accounts.get(msg.source);
             if (account)
@@ -44,8 +45,10 @@ export class Server {
         }
 
         this.passMessagesToGames();
-        setInterval(this.pruneAccounts.bind(this), cleaningTime)
+        setInterval(this.pruneAccounts.bind(this), cleaningTime);
     }
+
+
 
     private pruneAccount(acc: Account) {
         console.log('prune', acc.username);
@@ -101,10 +104,21 @@ export class Server {
         this.messenger.addQueue(acc.token);
         this.messenger.sendMessageTo(MessageType.LoginResponce, {
             username: acc.username,
-            token: acc.token
+            token: acc.token,
+            deckList: acc.deck.toJson()
         }, msg.source);
 
         this.changeToken(acc, msg.source, token);
+    }
+
+    private setDeck(msg: Message) {
+        let acc = this.accounts.get(msg.source);
+        if (!acc) {
+            this.errors.clientError(msg.source, ErrorType.AuthError, 'You must be logged in to set your deck.');
+            return;
+        }
+        // Todo validation
+        acc.deck.fromJson(msg.data.deckList);
     }
 
     private changeToken(account: Account, oldToken: string, newToken: string) {

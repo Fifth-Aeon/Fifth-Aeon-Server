@@ -3,7 +3,7 @@ export enum MessageType {
     Info, ClientError, Connect, Ping,
 
     // Accounts
-    AnonymousLogin, LoginResponce,
+    AnonymousLogin, LoginResponce, SetDeck,
 
     // Queuing
     JoinQueue, ExitQueue, QueueJoined, StartGame,
