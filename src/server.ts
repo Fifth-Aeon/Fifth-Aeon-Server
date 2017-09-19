@@ -48,8 +48,6 @@ export class Server {
         setInterval(this.pruneAccounts.bind(this), cleaningTime);
     }
 
-
-
     private pruneAccount(acc: Account) {
         console.log('prune', acc.username);
         this.accounts.delete(acc.token);
@@ -73,7 +71,6 @@ export class Server {
     }
 
     private addRoutes() {
-        this.app.use('/', express.static('public'))
         this.app.get('/report', (req, res) => {
             res.send(this.getReport())
         });
@@ -161,6 +158,10 @@ export class Server {
             this.games.delete(gameId);
         else
             console.error('Trying to delete non-existant game with id', gameId);
+    }
+
+    public getErrorHandler() {
+        return this.errors;
     }
 
 }

@@ -2,19 +2,21 @@ import { Serialize, Deserialize } from 'cerialize'
 import { Card } from './game_model/card';
 
 import { ServerMessenger } from './messenger'
+import { ErrorType } from './errors'
 import { Message, MessageType } from './message';
-import { Game, GameAction } from './game_model/game';
-import { GameFormat } from './game_model/gameFormat';
+import { Game, GameAction, GameActionType } from './game_model/game';
+import { ServerGame } from './game_model/serverGame';
+import { GameFormat, standardFormat } from './game_model/gameFormat';
 import { Server } from './server';
 import { Account } from './account';
 
 export class GameServer {
     private playerAccounts: Account[] = [];
-    private game: Game;
+    private game: ServerGame;
     private id: string;
 
     constructor(private messenger: ServerMessenger, private server: Server, id: string, player1: Account, player2: Account) {
-        this.game = new Game(new GameFormat(), false, [player1.deck, player2.deck]);
+        this.game = new ServerGame(standardFormat,  [player1.deck, player2.deck]);
         this.id = id;
         this.playerAccounts.push(player1);
         this.playerAccounts.push(player2);
@@ -32,6 +34,11 @@ export class GameServer {
             return;
         }
         let events = this.game.handleAction(action);
+        if (events == null) {
+            this.server.getErrorHandler().clientError(msg.source, ErrorType.GameActionError,
+                'Cannot take action ' + GameActionType[action.type])
+            return;
+        }
         this.playerAccounts.forEach(acc => {
             events.forEach(event => {
                 this.messenger.sendMessageTo(MessageType.GameEvent, event, acc.token);
