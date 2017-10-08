@@ -9,7 +9,7 @@ export class Account {
     token: string;
     gameId: string | null;
     lastUsed: Date;
-    deck: DeckList = new DeckList(new GameFormat());;
+    deck: DeckList = new DeckList(new GameFormat());
 
     constructor(token: string, name: string) {
         this.token = token;
