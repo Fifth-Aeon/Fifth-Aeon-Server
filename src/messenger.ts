@@ -1,5 +1,5 @@
 import * as WebSocket from 'ws';
-import {parse, stringify} from 'circular-json';
+import { parse, stringify } from 'circular-json';
 
 import { getToken } from './tokens';
 import { Queue } from 'typescript-collections';
@@ -12,12 +12,12 @@ import * as express from 'express';
  * @class Messenger
  */
 abstract class Messenger {
-    protected handlers: Map<MessageType, (message:Message) => void>;
+    protected handlers: Map<MessageType, (message: Message) => void>;
     protected name: string;
     protected id: string;
     public onMessage: (message: Message) => void = () => null;
 
-    constructor(isServer:boolean) {
+    constructor(isServer: boolean) {
         this.name = isServer ? 'Server' : 'Client';
         this.handlers = new Map();
     }
@@ -33,8 +33,8 @@ abstract class Messenger {
         }
     }
 
-    protected makeMessageHandler(ws:any) {
-        ws.on('message', (data:any, flags:any) => {
+    protected makeMessageHandler(ws: any) {
+        ws.on('message', (data: any, flags: any) => {
             let message = this.readMessage(data);
             if (!message) {
                 return;
@@ -57,7 +57,7 @@ abstract class Messenger {
         });
     }
 
-    public addHandeler(messageType:MessageType, callback: (message: Message) => void, context?: any) {
+    public addHandeler(messageType: MessageType, callback: (message: Message) => void, context?: any) {
         if (context) {
             callback = callback.bind(context);
         }
@@ -84,7 +84,7 @@ export class ServerMessenger extends Messenger {
     protected connections: Map<string, any>;
     protected queues: Map<string, Queue<string>>;
 
-    constructor(server:any) {
+    constructor(server: any) {
         super(true);
         this.connections = new Map<string, any>();
         this.queues = new Map<string, Queue<string>>();

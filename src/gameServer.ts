@@ -1,4 +1,3 @@
-import { Serialize, Deserialize } from 'cerialize'
 import { Card } from './game_model/card';
 
 import { ServerMessenger } from './messenger'

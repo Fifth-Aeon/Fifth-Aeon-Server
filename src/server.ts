@@ -8,6 +8,7 @@ import { ErrorHandeler, ErrorType } from './errors';
 
 import * as os from 'os';
 import * as express from 'express';
+import * as bodyParser from 'body-parser'
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -28,6 +29,7 @@ export class Server {
 
     constructor(port: number) {
         this.app = express();
+        this.app.use(bodyParser.json());
         this.addRoutes();
         let expressServer = this.app.listen(port, () => {
             console.log('Server started on port', port);
@@ -46,6 +48,18 @@ export class Server {
 
         this.passMessagesToGames();
         setInterval(this.pruneAccounts.bind(this), cleaningTime);
+        
+    }
+
+    private addRoutes() {
+        this.app.get('/report', (req, res) => {
+            res.send(this.getReport())
+        });
+
+        this.app.post('/login', (req, res) => {
+            console.log(req.body);
+            res.send(JSON.stringify(req.body, null, 4));
+        });
     }
 
     private pruneAccount(acc: Account) {
@@ -70,11 +84,6 @@ export class Server {
         }
     }
 
-    private addRoutes() {
-        this.app.get('/report', (req, res) => {
-            res.send(this.getReport())
-        });
-    }
 
     private getReport() {
         return {
