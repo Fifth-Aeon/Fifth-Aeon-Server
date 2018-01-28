@@ -6,6 +6,8 @@ import { GameServer } from './gameServer';
 import { MatchQueue } from './matchmaking';
 import { ErrorHandeler, ErrorType } from './errors';
 
+import { authRoutes } from './routes/auth';
+
 import * as os from 'os';
 import * as express from 'express';
 import * as bodyParser from 'body-parser'
@@ -48,17 +50,12 @@ export class Server {
 
         this.passMessagesToGames();
         setInterval(this.pruneAccounts.bind(this), cleaningTime);
-        
     }
 
     private addRoutes() {
+        this.app.use('/api/auth', authRoutes);
         this.app.get('/report', (req, res) => {
             res.send(this.getReport())
-        });
-
-        this.app.post('/login', (req, res) => {
-            console.log(req.body);
-            res.send(JSON.stringify(req.body, null, 4));
         });
     }
 
