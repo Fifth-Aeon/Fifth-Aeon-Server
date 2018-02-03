@@ -6,11 +6,15 @@ import { GameServer } from './gameServer';
 import { MatchQueue } from './matchmaking';
 import { ErrorHandeler, ErrorType } from './errors';
 
+
 import { authRoutes } from './routes/auth';
 
 import * as os from 'os';
+import * as morgan from 'morgan';
 import * as express from 'express';
 import * as bodyParser from 'body-parser'
+import * as cors from 'cors';
+import { avalibilityRoutes } from './routes/avalibility';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -53,10 +57,13 @@ export class Server {
     }
 
     private addRoutes() {
+        this.app.use(cors());
         this.app.use('/api/auth', authRoutes);
+        this.app.use('/api/availability', avalibilityRoutes);
         this.app.get('/report', (req, res) => {
             res.send(this.getReport())
         });
+        this.app.use(morgan('dev'))
     }
 
     private pruneAccount(acc: Account) {

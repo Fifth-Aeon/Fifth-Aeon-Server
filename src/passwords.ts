@@ -34,6 +34,10 @@ class PasswordGenerator {
         return this.signJWT({ accountID: accountID, email: true });
     }
 
+    public createPasswordResetToken(accountID: number) {
+        return this.signJWT({ accountID: accountID, pass: true });
+    }
+
     private needsAuth(req: Request, res: Response, next: NextFunction) {
         try {
             req.user = jwt.verify(req.header('token'), this.secret);
