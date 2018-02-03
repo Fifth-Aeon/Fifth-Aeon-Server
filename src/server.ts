@@ -44,6 +44,7 @@ export class Server {
         this.messenger = new ServerMessenger(expressServer);
         this.errors = new ErrorHandeler(this.messenger);
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
+        
         this.messenger.addHandeler(MessageType.AnonymousLogin, (msg) => this.anonLogin(msg));
         this.messenger.addHandeler(MessageType.SetDeck, (msg) => this.setDeck(msg));
         this.messenger.onMessage = (msg: Message) => {

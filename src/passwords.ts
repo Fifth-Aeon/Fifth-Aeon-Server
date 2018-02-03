@@ -27,15 +27,15 @@ class PasswordGenerator {
     }
 
     public createUserToken(accountID: number) {
-        return this.signJWT({ accountID: accountID });
+        return this.signJWT({ uid: accountID });
     }
 
     public createEmailVerificationToken(accountID: number) {
-        return this.signJWT({ accountID: accountID, email: true });
+        return this.signJWT({ uid: accountID, email: true });
     }
 
     public createPasswordResetToken(accountID: number) {
-        return this.signJWT({ accountID: accountID, pass: true });
+        return this.signJWT({ uid: accountID, pass: true });
     }
 
     private needsAuth(req: Request, res: Response, next: NextFunction) {

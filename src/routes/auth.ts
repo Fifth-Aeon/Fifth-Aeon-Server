@@ -68,12 +68,12 @@ router.post('/login', validators.requiredAttributes(['usernameOrEmail', 'passwor
 
 router.post('/verifyEmail', passwords.authorize, async (req, res, next) => {
     try {
-        if (req.user.email && req.user.accountID) {
+        if (req.user.email && req.user.uid) {
             await db.query(`
                 UPDATE CCG.Account
                 SET emailVerified = true
                 WHERE accountID = $1;
-            `, [req.user.accountID]);
+            `, [req.user.uid]);
             res.status(200).json({
                 message: 'done'
             });
@@ -89,18 +89,18 @@ router.post('/verifyReset', passwords.authorize, validators.requiredAttributes([
     try {
         const passwordData = await passwords.getHashedPassword(req.body.password);
         const queryResult = await db.query(`
-            UPDATE Comics.Account 
+            UPDATE CCG.Account 
             SET password = $1, salt = $2 
             WHERE accountID = $3
             RETURNING username;`, [
             passwordData.hash,
             passwordData.salt,
-            req.user.accountID
+            req.user.uid
         ]);
 
         res.status(200)
             .json({
-                token: passwords.createUserToken(req.user.accountID),
+                token: passwords.createUserToken(req.user.uid),
                 username: queryResult.rows[0].username
             });
     } catch (err) {
@@ -112,7 +112,7 @@ router.post('/requestReset', validators.requiredAttributes(['usernameOrEmail']),
     try {
         const queryResult = await db.query(`
             SELECT email, accountID 
-            FROM Comics.Account 
+            FROM CCG.Account 
             WHERE username = $1
                OR email    = $1`, [req.body.usernameOrEmail]);
         if (queryResult.rowCount === 0) {
