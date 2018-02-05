@@ -5,9 +5,11 @@ CREATE TABLE CCG.Account (
     username            VARCHAR(30) UNIQUE,
     email               VARCHAR(254) UNIQUE,
     emailVerified       BOOLEAN DEFAULT false,
-    skillLevel          SMALLINT DEFAULT 800,
     password            VARCHAR(256),
-    salt                VARCHAR(32)
+    salt                VARCHAR(32),
+    skillLevel          SMALLINT DEFAULT 800,
+    gameCurrency        INTEGER,
+    set1Packs           INTEGER
 );
 
 CREATE TABLE CCG.CollectionRecord (

@@ -6,15 +6,15 @@ import { GameServer } from './gameServer';
 import { MatchQueue } from './matchmaking';
 import { ErrorHandeler, ErrorType } from './errors';
 
-
 import { authRoutes } from './routes/auth';
 
 import * as os from 'os';
 import * as morgan from 'morgan';
 import * as express from 'express';
-import * as bodyParser from 'body-parser'
+import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import { avalibilityRoutes } from './routes/avalibility';
+import { cardRoutes } from './routes/cards';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -51,7 +51,7 @@ export class Server {
             let account = this.accounts.get(msg.source);
             if (account)
                 account.freshen();
-        }
+        };
 
         this.passMessagesToGames();
         setInterval(this.pruneAccounts.bind(this), cleaningTime);
@@ -61,10 +61,11 @@ export class Server {
         this.app.use(cors());
         this.app.use('/api/auth', authRoutes);
         this.app.use('/api/availability', avalibilityRoutes);
+        this.app.use('/api/cards', cardRoutes);
         this.app.get('/report', (req, res) => {
-            res.send(this.getReport())
+            res.send(this.getReport());
         });
-        this.app.use(morgan('dev'))
+        this.app.use(morgan('dev'));
     }
 
     private pruneAccount(acc: Account) {
@@ -100,7 +101,7 @@ export class Server {
                 totalFree: os.freemem(),
                 totalUsed: os.totalmem()
             }
-        }
+        };
     }
 
     public isLoggedIn(token: string): boolean {
