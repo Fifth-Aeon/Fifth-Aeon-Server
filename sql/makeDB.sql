@@ -8,31 +8,12 @@ CREATE TABLE CCG.Account (
     password            VARCHAR(256),
     salt                VARCHAR(32),
     skillLevel          SMALLINT DEFAULT 800,
-    gameCurrency        INTEGER,
-    set1Packs           INTEGER
-);
-
-CREATE TABLE CCG.CollectionRecord (
-    accountID           INTEGER,
-    cardID              VARCHAR(30),
-    repeats             SMALLINT,
-    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID),
-    Primary Key (accountID, cardID)
+    collection          JSON
 );
 
 CREATE TABLE CCG.Deck (
     deckID              SERIAL PRIMARY KEY,
     accountID           INTEGER,
-    name                VARCHAR(30),
-    avatar              VARCHAR(30),
-    shared              BOOLEAN DEFAULT false,
+    deckData            JSON,
     FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
-);
-
-CREATE TABLE CCG.DeckRecord (
-    deckID              INTEGER,
-    cardID              VARCHAR(30),
-    repeats             SMALLINT,
-    FOREIGN KEY (deckID) REFERENCES CCG.Deck(deckID),
-    Primary Key (deckID, cardID)
 );

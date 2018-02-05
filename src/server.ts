@@ -59,13 +59,14 @@ export class Server {
 
     private addRoutes() {
         this.app.use(cors());
+        this.app.use(morgan('dev'));
         this.app.use('/api/auth', authRoutes);
         this.app.use('/api/availability', avalibilityRoutes);
         this.app.use('/api/cards', cardRoutes);
         this.app.get('/report', (req, res) => {
             res.send(this.getReport());
         });
-        this.app.use(morgan('dev'));
+        
     }
 
     private pruneAccount(acc: Account) {

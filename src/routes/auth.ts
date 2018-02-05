@@ -4,6 +4,7 @@ import * as express from 'express';
 import { Response } from 'express';
 import { validators } from './validators';
 import { email } from '../email';
+import { addCollection } from '../models/cards';
 
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.post('/register', validators.requiredAttributes(['username', 'email', 'pa
             ]);
         let result = queryResult.rows[0];
         email.sendVerificationEmail(result.email, result.accountid);
+        await addCollection(result.accountid);
         res.status(201)
             .json({
                 token: passwords.createUserToken(result.accountid),
@@ -40,7 +42,7 @@ router.post('/register', validators.requiredAttributes(['username', 'email', 'pa
 router.post('/login', validators.requiredAttributes(['usernameOrEmail', 'password']), async (req, res, next) => {
     try {
         const queryResult = await db.query(`
-            SELECT password, salt, accountID, username
+            SELECT password, salt, accountID, username, collection
             FROM CCG.Account 
             WHERE username = $1
                OR email    = $1`, [req.body.usernameOrEmail]);
@@ -57,7 +59,8 @@ router.post('/login', validators.requiredAttributes(['usernameOrEmail', 'passwor
             res.status(200)
                 .json({
                     token: passwords.createUserToken(targetUser.accountid),
-                    username: targetUser.username
+                    username: targetUser.username,
+                    collection: targetUser.collection
                 });
             return;
         }

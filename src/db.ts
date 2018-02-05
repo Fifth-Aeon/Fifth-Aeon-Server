@@ -1,7 +1,7 @@
 import { Pool, Client } from 'pg';
 import * as fs from 'fs';
 import { DeckList } from './game_model/deckList';
-import { saveDeck } from './models/cards';
+import { saveDeck, getDecks } from './models/cards';
 export const db = new Pool();
 
 async function startup() {
