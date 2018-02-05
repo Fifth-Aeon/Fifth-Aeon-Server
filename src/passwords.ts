@@ -48,7 +48,7 @@ class PasswordGenerator {
         }
     }
 
-    private signJWT(payload: string | object | Buffer) {
+    private signJWT(payload: any) {
         return jwt.sign(payload, this.secret, {
             expiresIn: PasswordGenerator.expirationTime
         });

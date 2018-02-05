@@ -20,11 +20,11 @@ router.post('/register', validators.requiredAttributes(['username', 'email', 'pa
             salt
         ) VALUES ($1, $2, $3, $4)
         RETURNING accountID, email;`, [
-            req.body.username,
-            req.body.email.toLowerCase(),
-            passwordData.hash,
-            passwordData.salt
-        ]);
+                req.body.username,
+                req.body.email.toLowerCase(),
+                passwordData.hash,
+                passwordData.salt
+            ]);
         let result = queryResult.rows[0];
         email.sendVerificationEmail(result.email, result.accountid);
         res.status(201)
@@ -50,6 +50,7 @@ router.post('/login', validators.requiredAttributes(['usernameOrEmail', 'passwor
                     account: req.body.usernameOrEmail,
                     message: 'No such account'
                 });
+            return;
         }
         const targetUser = queryResult.rows[0];
         if (await passwords.checkPassword(req.body.password, targetUser.password, targetUser.salt)) {
@@ -93,10 +94,10 @@ router.post('/verifyReset', passwords.authorize, validators.requiredAttributes([
             SET password = $1, salt = $2 
             WHERE accountID = $3
             RETURNING username;`, [
-            passwordData.hash,
-            passwordData.salt,
-            req.user.uid
-        ]);
+                passwordData.hash,
+                passwordData.salt,
+                req.user.uid
+            ]);
 
         res.status(200)
             .json({
@@ -125,7 +126,7 @@ router.post('/requestReset', validators.requiredAttributes(['usernameOrEmail']),
         }
         let result = queryResult.rows[0];
         email.sendPasswordResetEmail(result.email, result.accountid);
-        res.json({message: 'Reset email sent'});
+        res.json({ message: 'Reset email sent' });
     } catch (err) {
         next(err);
     }
