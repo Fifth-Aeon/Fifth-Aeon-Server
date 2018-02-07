@@ -5,7 +5,6 @@ import { QueryResult } from 'pg';
 import { getStarterDecks } from '../game_model/scenarios/decks';
 
 
-
 export async function addCollection(ownerID: number) {
 
     let collection = new Collection();
@@ -41,31 +40,35 @@ export async function getDecks(ownerID: number) {
     const query = await db.query('SELECT deckID, deckData FROM CCG.Deck WHERE accountID = $1;', [ownerID]);
     return query.rows.map(row => {
         let deckdata = row.deckdata as SavedDeck
-        deckdata.id = row.id;
+        deckdata.id = row.deckid;
         return deckdata;
     });
 }
 
-export async function saveDeck(deckData: SavedDeck, ownerID: number) {
-    let deck = new DeckList();
-    deck.fromSavable(deckData);
-    let createQuery: QueryResult;
+export async function deleteDeck(ownerID: number, deckID: number) {
+    return await db.query(`
+        DELETE FROM CCG.Deck
+        WHERE accountID = $1
+          and deckID    = $2;
+    `, [ownerID, deckID]);
+}
 
+export async function saveDeck(deck: SavedDeck, ownerID: number) {
+    let createQuery: QueryResult;
     if (deck.id === -1) {
         createQuery = await db.query(`
             INSERT INTO CCG.Deck (accountID, deckData) 
             VALUES ($1, $2)
             RETURNING (deckID);
-            `, [ownerID, deckData]);
+            `, [ownerID, deck]);
     } else {
         createQuery = await db.query(`
             UPDATE CCG.Deck 
             SET deckData = $2
             WHERE deckID = $1
             RETURNING (deckID);
-            `, [deck.id, deckData]);
+            `, [deck.id, deck]);
     }
-
     return createQuery.rows[0].deckid as number;
 }
 
