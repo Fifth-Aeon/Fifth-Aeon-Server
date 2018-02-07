@@ -7,9 +7,17 @@ Run `git clone --recursive https://github.com/WilliamRitson/CCG-Server.git
 
 Install [node](https://nodejs.org/en/) using an installer. This should also install npm.
 
+
 Run `npm install -g gulp` to get gulp which is used to compile the projects TypeScript into JavaScript.
 
-Finally run `npm install` within the project directory (the place you cloned it) to install the project's dependencies.
+Run `npm install` within the project directory (the place you cloned it) to install the project's dependencies.
+
+Install [postgres](https://www.postgresql.org/download/).
+
+Set the `PGUSER` [enviroment variable](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html) to the user for the postgress database and the `PGDATABASE` to the database on the server which the applicaiton should use.
+
+If you want email support set the `SENDGRID_API_KEY` enviroment variable.
+
 
 # Run
 You can use `gulp watch` to automatically compile typescript.

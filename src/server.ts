@@ -13,6 +13,7 @@ import * as morgan from 'morgan';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
+import { db, startDB } from "./db";
 import { avalibilityRoutes } from './routes/avalibility';
 import { cardRoutes } from './routes/cards';
 
@@ -57,7 +58,8 @@ export class Server {
         setInterval(this.pruneAccounts.bind(this), cleaningTime);
     }
 
-    private addRoutes() {
+    private async addRoutes() {
+        await startDB();
         this.app.use(cors());
         this.app.use(morgan('dev'));
         this.app.use('/api/auth', authRoutes);
