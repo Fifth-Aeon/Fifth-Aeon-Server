@@ -1,3 +1,4 @@
+require('make-promises-safe');
 import { Server } from './server';
 
 const port = process.env.PORT || 2222;
