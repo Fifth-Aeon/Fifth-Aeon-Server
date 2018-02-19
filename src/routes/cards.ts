@@ -2,8 +2,51 @@ import * as express from 'express';
 import { passwords } from '../passwords.js';
 import { validators } from './validators';
 import { saveDeck, saveCollection, getCollection, getDecks, deleteDeck } from '../models/cards';
+import { Collection } from '../game_model/collection.js';
 
 const router = express.Router();
+
+router.post('/reward', passwords.authorize, async (req, res, next) => {
+    try {
+        let collection = new Collection(await getCollection(req.user.uid));
+        let reward = collection.addWinReward(req.body.won);
+        await saveCollection(collection.getSavable(), req.user.uid);
+        res.json(reward);
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.post('/openPack', passwords.authorize, async (req, res, next) => {
+    try {
+        let collection = new Collection(await getCollection(req.user.uid));
+        if (!collection.canOpenBooster()) {
+            res.status(400).send('No packs to open.');
+            return;
+        }
+        let packContents = collection.openBooster()
+        await saveCollection(collection.getSavable(), req.user.uid);
+        res.json( packContents );
+    } catch (e) {
+        next(e);
+    }
+});
+
+
+router.post('/buy', passwords.authorize, async (req, res, next) => {
+    try {
+        let collection = new Collection(await getCollection(req.user.uid));
+        if (!collection.canBuyPack()) {
+            res.status(400).send('Not enough gold to buy that.');
+            return;
+        }
+        collection.buyPack()
+        await saveCollection(collection.getSavable(), req.user.uid);
+        res.sendStatus(200);
+    } catch (e) {
+        next(e);
+    }
+});
 
 router.post('/storeDeck', passwords.authorize, validators.requiredAttributes(['deck']), async (req, res, next) => {
     try {
