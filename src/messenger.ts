@@ -89,6 +89,10 @@ export class ServerMessenger extends Messenger {
         this.connections = new Map<string, any>();
         this.queues = new Map<string, Queue<string>>();
         this.ws = new WebSocket.Server({ server });
+        this.ws.on('error', err => {
+            console.error('WS ERROR');
+            console.error(err);
+        })
         this.id = 'server';
         this.ws.on('connection', (ws) => {
             ws.on('message', (data) => {
