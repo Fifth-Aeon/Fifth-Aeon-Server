@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import { StringDecoder } from 'string_decoder';
 import { Request, Response, NextFunction } from 'express';
 import { has } from 'typescript-collections/dist/lib/util';
+import { config } from './config';
 
 interface PasswordHash {
     hash: string;
@@ -17,12 +18,7 @@ class PasswordGenerator {
     public authorize: (req: Request, res: Response, next: NextFunction) => void;
 
     constructor() {
-        if (process.env.JWT_SECRET) {
-            this.secret = process.env.JWT_SECRET;
-        } else {
-            this.secret = 'TestSecret';
-            console.warn('No JWT_SECRET enviroment variable found. Using test secret. Do not use this in production.');
-        }
+        this.secret = config.jwtSecret;
         this.authorize = this.needsAuth.bind(this);
     }
 

@@ -1,15 +1,15 @@
-import { passwords } from "./passwords";
 import * as sgMail from '@sendgrid/mail'
+import { passwords } from "./passwords";
+import { config } from "./config";
 
 class EmailMailer {
     private static fromAddress = 'noreply@comichub.io';
     private canSend = true;;
 
     constructor() {
-        if (process.env.SENDGRID_API_KEY) {
-            sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        }
-        else {
+        if (config.sendgridAPIKey) {
+            sgMail.setApiKey(config.sendgridAPIKey);
+        } else {
             console.warn('No Sendgrid API Key found in SENDGRID_API_KEY enviroment variable. Emails will not be sent.');
             this.canSend = false;
         }
