@@ -4,7 +4,11 @@ import { DeckList } from './game_model/deckList';
 import { saveDeck, getDecks } from './models/cards';
 import { config } from './config';
 
-export const db = new Pool(config.database);
+
+export const db = new Pool({
+  connectionString: config.connectionString
+});
+
 
 export async function startDB() {
   try {

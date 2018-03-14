@@ -7,7 +7,7 @@ import { Server } from './server';
 import { getToken } from './tokens';
 
 export class MatchQueue {
-    private playerQueue = new LinkedDictionary<string, number>();
+    private playerQueue = new Set<string>();
     private privateGames = new Map<string, string>();
 
     constructor(private server: Server, private errors: ErrorHandeler, private messenger: ServerMessenger, private startGame: (p1:string, p2:string) => void) {
@@ -54,18 +54,18 @@ export class MatchQueue {
     }
 
     public getPlayersInQueue(): number {
-        return this.playerQueue.size();
+        return this.playerQueue.size;
     }
 
     private makeGame(player1: string, player2: string) {
-        this.playerQueue.remove(player1);
-        this.playerQueue.remove(player2);
+        this.playerQueue.delete(player1);
+        this.playerQueue.delete(player2);
         this.startGame(player1, player2);
     }
 
     public removeFromQueue(token: string) {
-        if (this.playerQueue.containsKey(token))
-            this.playerQueue.remove(token);
+        if (this.playerQueue.has(token))
+            this.playerQueue.delete(token);
     }
 
     private searchQueue(playerToken: string) {
@@ -76,7 +76,6 @@ export class MatchQueue {
                 return;
             if (otherToken == playerToken)
                 return;
-            // Todo: Add logic to filter out inappropiate matchups
             other = otherToken;
             found = true;
         });
@@ -90,11 +89,11 @@ export class MatchQueue {
             this.errors.clientError(message.source, ErrorType.AuthError, "Not logged in.");
         }
         let playerToken: string = message.source;
-        if (this.playerQueue.containsKey(playerToken)) {
+        if (this.playerQueue.has(playerToken)) {
             this.errors.clientError(message.source, ErrorType.QueueError, "Already in queue");
             return;
         }
-        this.playerQueue.setValue(playerToken, (new Date()).getTime());
+        this.playerQueue.add(playerToken);
         this.messenger.sendMessageTo(MessageType.QueueJoined, {}, message.source);
         this.searchQueue(playerToken);
     }
