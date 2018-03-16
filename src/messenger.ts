@@ -1,5 +1,4 @@
 import * as WebSocket from 'ws';
-import { parse, stringify } from 'circular-json';
 
 import { getToken } from './tokens';
 import { Queue } from 'typescript-collections';
@@ -24,7 +23,7 @@ abstract class Messenger {
 
     private readMessage(data: any): Message | null {
         try {
-            let parsed = parse(data);
+            let parsed = JSON.parse(data);
             parsed.type = MessageType[parsed.type];
             return parsed as Message;
         } catch (e) {
@@ -50,7 +49,7 @@ abstract class Messenger {
     }
 
     protected makeMessage(messageType: MessageType, data: string | object): string {
-        return stringify({
+        return JSON.stringify({
             type: MessageType[messageType],
             data: data,
             source: this.id
@@ -96,8 +95,9 @@ export class ServerMessenger extends Messenger {
         this.id = 'server';
         this.ws.on('connection', (ws) => {
             ws.on('message', (data) => {
-                let msg = parse(data.toString()) as Message;
+                let msg = JSON.parse(data.toString()) as Message;
                 this.connections.set(msg.source, ws);
+                ws.on('error', console.error);
             });
             this.makeMessageHandler(ws);
         });
