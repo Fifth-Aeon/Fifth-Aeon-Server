@@ -11,6 +11,9 @@
     "test": "mocha --reporter spec --compilers ts:ts-node/register",
     "devstart": "nodemon dist/index.js"
   },
+  "engines": {
+    "node": "8.9.4"
+  },
   "devDependencies": {
     "@types/body-parser": "1.16.8",
     "@types/chai": "^4.1.0",
