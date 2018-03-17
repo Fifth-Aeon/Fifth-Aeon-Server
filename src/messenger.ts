@@ -130,12 +130,6 @@ export class ServerMessenger extends Messenger {
         }
     }
 
-    public changeToken(oldToken: string, newToken: string) {
-        let temp = this.connections.get(oldToken);
-        this.connections.delete(oldToken);
-        this.connections.set(newToken, temp);
-    }
-
     /**
      * Send message from server to all clients
      * 

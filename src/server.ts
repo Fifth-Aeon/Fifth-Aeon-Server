@@ -16,6 +16,7 @@ import * as cors from 'cors';
 import { db, startDB } from "./db";
 import { avalibilityRoutes } from './routes/avalibility';
 import { cardRoutes } from './routes/cards';
+import { authenticationModel } from './models/authentication.model';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -46,7 +47,6 @@ export class Server {
         this.errors = new ErrorHandeler(this.messenger);
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
         
-        this.messenger.addHandeler(MessageType.AnonymousLogin, (msg) => this.anonLogin(msg));
         this.messenger.addHandeler(MessageType.SetDeck, (msg) => this.setDeck(msg));
         this.messenger.onMessage = (msg: Message) => {
             let account = this.accounts.get(msg.source);
@@ -60,6 +60,7 @@ export class Server {
 
     private async addRoutes() {
         await startDB();
+        authenticationModel.setServer(this);
         this.app.use(cors());
         this.app.use(morgan('dev'));
         this.app.use('/api/auth', authRoutes);
@@ -111,19 +112,12 @@ export class Server {
         return this.accounts.has(token);
     }
 
-    private anonLogin(msg: Message) {
-        let userName = msg.data.username;
+    public createMultiplayerUser(username: string) {
         let token = getToken();
-        let acc = new Account(token, userName);
+        let account = new Account(token, username);
+        this.accounts.set(account.token, account);
 
-        this.messenger.addQueue(acc.token);
-        this.messenger.sendMessageTo(MessageType.LoginResponce, {
-            username: acc.username,
-            token: acc.token,
-            deckList: acc.deck.toJson()
-        }, msg.source);
-
-        this.changeToken(acc, msg.source, token);
+        return account;
     }
 
     private setDeck(msg: Message) {
@@ -136,10 +130,6 @@ export class Server {
         acc.deck.fromJson(msg.data.deckList);
     }
 
-    private changeToken(account: Account, oldToken: string, newToken: string) {
-        this.accounts.set(newToken, account);
-        this.messenger.changeToken(oldToken, newToken);
-    }
 
     private passMessagesToGames() {
         this.messenger.addHandeler(MessageType.GameAction, (msg: Message) => {
