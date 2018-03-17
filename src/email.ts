@@ -3,7 +3,10 @@ import { passwords } from "./passwords";
 import { config } from "./config";
 
 class EmailMailer {
-    private static fromAddress = 'noreply@comichub.io';
+    private static siteName = 'ccg';
+    private static domain = 'https://ccg-game.firebaseapp.com';
+    private static fromAddress = `noreply@${EmailMailer.siteName}`;
+
     private canSend = true;;
 
     constructor() {
@@ -18,15 +21,15 @@ class EmailMailer {
     public async sendPasswordResetEmail(targetEmail: string, accountID: number) {
         if (!this.canSend) return;
         const token = passwords.createPasswordResetToken(accountID);
-        const url = `https://comichub.io/reset/${token}`;
+        const url = `${EmailMailer.domain}/reset/${token}`;
         try {
             await sgMail.send({
                 to: targetEmail,
                 from: EmailMailer.fromAddress,
                 subject: 'Password Reset',
-                text: `You requested a password reset for ComicHub, change your password by visiting ${url}`,
+                text: `You requested a password reset for ${EmailMailer.siteName}, change your password by visiting ${url}`,
                 html: `
-    <p>You requested a password reset for ComicHub.</p>
+    <p>You requested a password reset for ${EmailMailer.siteName}.</p>
     <p>Change your password by clicking <a href="${url}" target="_blank">${url}</a>.</p>`,
             });
         } catch (err) {
@@ -37,7 +40,7 @@ class EmailMailer {
     public async sendVerificationEmail(targetEmail: string, accountID: number) {
         if (!this.canSend) return;
         const token = passwords.createEmailVerificationToken(accountID)
-        const url = `https://comichub.io/verify/${token}`;
+        const url = `${EmailMailer.domain}/verify/${token}`;
         try {
             await sgMail.send({
                 to: targetEmail,
@@ -45,8 +48,8 @@ class EmailMailer {
                 subject: 'Email Verification',
                 text: `Please verify your emaill address by visiting ${url}`,
                 html: `
-    <p>Thank you for creating an account on ComicHub.</p>
-    <p>Please verify your emaill address by clicking <a href="${url}" target="_blank">${url}</a>.</p>`,
+    <p>Thank you for creating an account on ${EmailMailer.siteName}.</p>
+    <p>Please verify your email address by clicking <a href="${url}" target="_blank">${url}</a>.</p>`,
             });
         } catch (err) {
             console.error(err);
@@ -56,3 +59,4 @@ class EmailMailer {
 }
 
 export const email = new EmailMailer();
+
