@@ -17,6 +17,7 @@ import { db, startDB } from "./db";
 import { avalibilityRoutes } from './routes/avalibility';
 import { cardRoutes } from './routes/cards';
 import { authenticationModel } from './models/authentication.model';
+import { NextFunction } from 'express-serve-static-core';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -46,7 +47,7 @@ export class Server {
         this.messenger = new ServerMessenger(expressServer);
         this.errors = new ErrorHandeler(this.messenger);
         this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
-        
+
         this.messenger.addHandeler(MessageType.SetDeck, (msg) => this.setDeck(msg));
         this.messenger.onMessage = (msg: Message) => {
             let account = this.accounts.get(msg.source);
@@ -69,7 +70,16 @@ export class Server {
         this.app.get('/report', (req, res) => {
             res.send(this.getReport());
         });
-        
+        this.app.use(this.expressErrorHandler as any);
+
+    }
+
+    private expressErrorHandler(err: Error, req: Request, res: express.Response, next: NextFunction) {
+        console.error(err);
+        res.status(500)
+            .json({
+                message: err.message || err.name
+            })
     }
 
     private pruneAccount(acc: Account) {
