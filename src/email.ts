@@ -3,9 +3,9 @@ import { passwords } from "./passwords";
 import { config } from "./config";
 
 class EmailMailer {
-    private static siteName = 'ccg';
-    private static domain = 'https://ccg-game.firebaseapp.com';
-    private static fromAddress = `noreply@${EmailMailer.siteName}`;
+    private static siteName = 'Fifth Aeon';
+    private static domain = 'https://fifthaeon.com';
+    private static fromAddress = `noreply@fifthaeon.com`;
 
     private canSend = true;;
 
