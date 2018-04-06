@@ -43,7 +43,7 @@ abstract class Messenger {
                 cb(message);
                 this.onMessage(message);
             } else {
-                console.error('No handler for message type', message.type);
+                console.error('No handler for message type', MessageType[message.type]);
             }
         });
     }
@@ -89,16 +89,15 @@ export class ServerMessenger extends Messenger {
         this.queues = new Map<string, Queue<string>>();
         this.ws = new WebSocket.Server({ server });
         this.ws.on('error', err => {
-            console.error('WS ERROR');
-            console.error(err);
+            console.error('Server Websocket Error:\n', err);
         })
         this.id = 'server';
         this.ws.on('connection', (ws) => {
             ws.on('message', (data) => {
                 let msg = JSON.parse(data.toString()) as Message;
                 this.connections.set(msg.source, ws);
-                ws.on('error', console.error);
             });
+            ws.on('error', (err) => console.error('client ws error', err));
             this.makeMessageHandler(ws);
         });
         this.addHandeler(MessageType.Connect, (msg) => this.checkQueue(msg.source));

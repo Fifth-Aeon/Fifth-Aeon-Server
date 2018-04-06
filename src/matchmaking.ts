@@ -10,7 +10,12 @@ export class MatchQueue {
     private playerQueue = new Set<string>();
     private privateGames = new Map<string, string>();
 
-    constructor(private server: Server, private errors: ErrorHandeler, private messenger: ServerMessenger, private startGame: (p1:string, p2:string) => void) {
+    constructor(
+        private server: Server, 
+        private errors: ErrorHandeler, 
+        private messenger: ServerMessenger, 
+        private startGame: (p1:string, p2:string) => void
+    ) {
         messenger.addHandeler(MessageType.JoinQueue, this.onJoinQueue, this);
         messenger.addHandeler(MessageType.ExitQueue, this.onExitQueue, this);
         messenger.addHandeler(MessageType.NewPrivateGame, this.newPrivateGame, this);
