@@ -3,7 +3,7 @@ import { Message, MessageType } from './message';
 
 
 export enum ErrorType {
-    GameActionError, AuthError, InvalidIdError, QueueError
+    GameActionError, AuthError, InvalidIdError, QueueError, DeckError
 }
 
 export interface ClientErrorData {
