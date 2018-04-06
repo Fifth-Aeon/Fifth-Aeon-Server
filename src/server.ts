@@ -18,6 +18,7 @@ import { avalibilityRoutes } from './routes/avalibility';
 import { cardRoutes } from './routes/cards';
 import { authenticationModel } from './models/authentication.model';
 import { NextFunction } from 'express-serve-static-core';
+import { DeckList } from './game_model/deckList';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -139,8 +140,14 @@ export class Server {
             this.errors.clientError(msg.source, ErrorType.AuthError, 'You must be logged in to set your deck.');
             return;
         }
-        // Todo validation
-        acc.deck.fromJson(msg.data.deckList);
+
+        let deck = new DeckList()
+        try {
+            acc.deck.fromJson(msg.data.deckList);
+        } catch (e) {
+            this.errors.clientError(msg.source, ErrorType.DeckError, 'Invalid Deck.');
+            acc.deck = new DeckList();
+        }
     }
 
 
