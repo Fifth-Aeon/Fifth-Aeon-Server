@@ -123,6 +123,10 @@ export class Server {
     }
 
     public createMultiplayerUser(username: string) {
+        let existing = Array.from(this.accounts.values()).find(acc => acc.username === username);
+        if (existing)
+            return existing;
+
         let token = getToken();
         let account = new Account(token, username);
         this.accounts.set(account.token, account);
