@@ -36,7 +36,7 @@ class PasswordGenerator {
 
     private needsAuth(req: Request, res: Response, next: NextFunction) {
         try {
-            req.user = jwt.verify(req.header('token'), this.secret);
+            (req as any).user = jwt.verify(req.header('token'), this.secret);
             next();
         } catch (e) {
             res.status(401)

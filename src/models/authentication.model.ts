@@ -4,6 +4,12 @@ import { db } from "../db";
 import { email } from "../email";
 import { addCollection } from "./cards";
 
+export interface UserData {
+    email: string;
+    uid: number;
+}
+
+
 export class AuthenticationModel {
     private server: Server;
 

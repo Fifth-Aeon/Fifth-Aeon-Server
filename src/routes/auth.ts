@@ -5,14 +5,10 @@ import { Response } from 'express';
 import { validators } from './validators';
 import { email } from '../email';
 import { addCollection } from '../models/cards';
-import { authenticationModel } from '../models/authentication.model';
+import { authenticationModel, UserData } from '../models/authentication.model';
 
 const router = express.Router();
 
-interface UserData {
-    email: string;
-    uid: number;
-}
 
 router.post('/register', validators.requiredAttributes(['username', 'email', 'password']), async (req, res, next) => {
     try {
