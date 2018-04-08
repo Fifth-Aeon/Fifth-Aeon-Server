@@ -2,9 +2,7 @@
 
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
-import { StringDecoder } from 'string_decoder';
-import { Request, Response, NextFunction } from 'express';
-import { has } from 'typescript-collections/dist/lib/util';
+import { NextFunction, Request, Response } from 'express';
 import { config } from './config';
 
 interface PasswordHash {

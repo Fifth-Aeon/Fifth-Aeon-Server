@@ -3,6 +3,7 @@ import { passwords } from "../passwords";
 import { db } from "../db";
 import { email } from "../email";
 import { addCollection } from "./cards";
+import { nameGenerator } from "../nameGenerator";
 
 export interface UserData {
     email: string;
@@ -49,6 +50,28 @@ export class AuthenticationModel {
         email.sendVerificationEmail(result.email, result.accountid);
         await addCollection(result.accountID);
         return this.getAuthenticationResponse(result.accountID, data.username);
+    }
+
+    public async createGuestAccount() {
+        const guestPass = passwords.genRandomString(30);
+        const username = nameGenerator.getName();
+        const passwordData = await passwords.getHashedPassword(guestPass);
+        const queryResult = await db.query(`
+            INSERT INTO CCG.Account (
+                username,
+                email,
+                password,
+                salt
+            ) VALUES ($1, $2, $3, $4)
+            RETURNING accountID as "accountID", email;`, [
+                username,
+                '',
+                passwordData.hash,
+                passwordData.salt
+            ]);
+        let result = queryResult.rows[0];
+        await addCollection(result.accountID);
+        return this.getAuthenticationResponse(result.accountID, username);
     }
 
     public async login(usernameOrPassword: string, password: string) {

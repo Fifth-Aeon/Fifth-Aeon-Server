@@ -1,6 +1,6 @@
 CREATE SCHEMA CCG;
 
-CREATE TYPE CCG.USER_ROLE AS ENUM ('user', 'mod', 'admin');
+CREATE TYPE CCG.USER_ROLE AS ENUM ('guest', 'user', 'mod', 'admin');
 
 CREATE TABLE CCG.Account (
     accountID           SERIAL PRIMARY KEY,

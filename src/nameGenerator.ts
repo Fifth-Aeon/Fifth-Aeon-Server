@@ -1,80 +1,113 @@
-import {sample} from 'lodash';
+import { sample } from 'lodash';
+import { passwords } from './passwords';
+import { db } from './db';
+
 
 export class NameGenerator {
 
-    public getName(): string {
-        let first = sample(this.namesList).first;
-        let last = sample(this.namesList).last;
-        return first + ' ' + last
+    public async getGuestName() {
+        let guestName = this.generateGuestUsername();
+        let ok = await this.isUniqueUsername(guestName);
+
+        while (!ok) {
+            guestName = this.generateGuestUsername();
+            ok = await this.isUniqueUsername(guestName);
+        }
+
+        return guestName;
     }
 
-    // Historical captains, from wikipedia
-    private namesList = [
-        { first: 'Vitus', last: 'Bering' },
-        { first: 'William', last: 'Bainbridge' },
-        { first: 'Joshua', last: 'Barney' },
-        { first: 'James', last: 'Barron' },
-        { first: 'Samuel', last: 'Barron' },
-        { first: 'John', last: 'Barry' },
-        { first: 'Thomas', last: 'Berwick' },
-        { first: 'William', last: 'Bligh' },
-        { first: 'William', last: 'Brown' },
-        { first: 'Franklin', last: 'Buchanan' },
-        { first: 'Piero', last: 'Calamai' },
-        { first: 'Isaac', last: 'Chauncey' },
-        { first: 'Christopher', last: 'Columbus' },
-        { first: 'Thomas', last: 'Coram' },
-        { first: 'Stephen', last: 'Decatur' },
-        { first: 'Francis', last: 'Drake' },
-        { first: 'George', last: 'Duff' },
-        { first: 'Robert', last: 'FitzRoy' },
-        { first: 'George', last: 'Flavel' },
-        { first: 'Charles', last: 'Fryatt' },
-        { first: 'Paulo', last: 'Gama' },
-        { first: 'Vasco', last: 'Gama' },
-        { first: 'Giuseppe', last: 'Garibaldi' },
-        { first: 'Minoru', last: 'Genda' },
-        { first: 'Edgar', last: 'Gold' },
-        { first: 'Robert', last: 'Halpin' },
-        { first: 'Tameichi', last: 'Hara' },
-        { first: 'Mochitsura', last: 'Hashimoto' },
-        { first: 'Joseph', last: 'Hazelwood' },
-        { first: 'Takeo', last: 'Hirose' },
-        { first: 'Isaac', last: 'Hull' },
-        { first: 'George', last: 'Johnstone' },
-        { first: 'Pavlos', last: 'Kountouriotis' },
-        { first: 'William', last: 'Lacheur' },
-        { first: 'William', last: 'Ladd' },
-        { first: 'James', last: 'Lawrence' },
-        { first: 'Thomas', last: 'Macdonough' },
-        { first: 'Ferdinand', last: 'Magellan' },
-        { first: 'Robert', last: 'Maynard' },
-        { first: 'Thomas', last: 'McClelland' },
-        { first: 'Philo', last: 'McGiffen' },
-        { first: 'Hugh', last: 'Mulzac' },
-        { first: 'Richard', last: 'Murphy' },
-        { first: 'Horatio', last: 'Nelson' },
-        { first: 'Fred', last: 'Noonan' },
-        { first: 'Luis', last: 'Pardo' },
-        { first: 'Richard', last: 'Pearson' },
-        { first: 'Edward', last: 'Pellew' },
-        { first: 'Matthew', last: 'Perry' },
-        { first: 'Richard', last: 'Phillips' },
-        { first: 'David', last: 'Porter' },
-        { first: 'Arturo', last: 'Prat' },
-        { first: 'Edward', last: 'Preble' },
-        { first: 'Arthur', last: 'Rostron' },
-        { first: 'Tsutomi', last: 'Sakuma' },
-        { first: 'Anna', last: 'Shchetinina' },
-        { first: 'Edward', last: 'Smith' },
-        { first: 'Robert', last: 'Surcouf' },
-        { first: 'Thomas', last: 'Truxton' },
-        { first: 'Thomas', last: 'Truxton' },
-        { first: 'Angus', last: 'Walters' },
-        { first: 'Martin', last: 'Welch' },
-        { first: 'Charles', last: 'Wilkes' },
-        { first: 'Perry', last: 'Winslow' },
-        { first: 'Richard', last: 'Woodget' },
-        { first: 'He', last: 'Zheng' },
-    ]
+    private generateGuestUsername() {
+        let guestName = sample(this.guestNames);
+        let adj1 = '', adj2 = '', name = '';
+
+        while (adj1 === adj2 || name.length > 30) {
+            adj1 = sample(this.positiveAdjectives);
+            adj2 = sample(this.positiveAdjectives);
+            name = this.properCase(`${adj1} ${adj2} ${guestName}`);
+        }
+
+        return name;
+    }
+
+    private properCase(word: string) {
+        return word.replace(/\w\S*/g, (text) => {
+            return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
+        });
+    }
+
+    private async isUniqueUsername(name: string) {
+        const result = await db.query(`SELECT accountID 
+            FROM CCG.Account 
+            WHERE LOWER(username) = LOWER($1);` , [name]);
+        return result.rowCount === 0;
+    }
+
+    private guestNames = ['guest', 'visitor', 'visitant', 'sojourner']
+
+    private positiveAdjectives = [
+        'ADAPTABLE', 'ADVENTUROUS', 'AFFABLE', 'AGREEABLE', 'ALTRUISTIC',
+        'AMAZING', 'AMBITIOUS', 'AMIABLE', 'AMICABLE',
+        'AMUSING', 'ANGELIC', 'APPRECIATED',
+        'APPRECIATIVE', 'AUTHENTIC', 'AWARE', 'AWESOME',
+        'BALANCED', 'BEAUTIFUL', 'BELOVED', -'FABULOUS', 'BLISSFUL',
+        'BOLD', 'BRAVE', 'BREATHTAKING', 'BRIGHT', 'BRILLIANT',
+        'CALM', 'CAPABLE', 'CAREFUL', 'CARING',
+        'CENTERED', 'CHAMPION', 'CHARISMATIC', 'CHARMING',
+        'CHEERFUL', 'CHERISHED', 'COMFORTABLE', 'COMMUNICATIVE',
+        'CONFIDENT', 'CONSCIENTIOUS', 'CONSIDERATE',
+        'CONTENT', 'CONVIVIAL', 'COURAGEOUS', 'COURTEOUS', 'CREATIVE',
+        'DANDY', 'DARING', 'DAZZLED', 'DECISIVE', 'DEDICATED',
+        'DELIGHTFUL', 'DETERMINED', 'DILIGENT',
+        'DIPLOMATIC', 'DYNAMIC', 'EAGER', 'EASYGOING',
+        'EMPOWERED', 'ENCHANTED', 'ENDLESS', 'ENERGETIC',
+        'ENERGIZED', 'ENLIGHTENED', 'ENLIVENED', 'ENOUGH',
+        'ENTHUSIASTIC', 'ETERNAL', 'EXCELLENT', 'EXCITED',
+        'EXHILARATED', 'EXPANDED', 'EXPANSIVE', 'EXQUISITE',
+        'EXTRAORDINARY', 'EXUBERANT',
+        'FABULOUS', 'FAITHFUL', 'FANTASTIC', 'FAVORABLE',
+        'FEARLESS', 'FLOURISHED', 'FLOWING', 'FOCUSED', 'FORCEFUL',
+        'FORGIVING', 'FORTUITOUS', 'FRANK', 'FREE',
+        'FREESPIRITED', 'FRIENDLY', 'FULFILLED',
+        'GENEROUS', 'GENIAL', 'GENIUS', 'GENTLE', 'GENUINE',
+        'GIVING', 'GLAD', 'GLORIOUS', 'GLOWING', 'GODDESS', 'GOOD',
+        'GRACEFUL', 'GRACIOUS', 'GRATEFUL', 'GREAT', 'GREGARIOUS', 'GROUNDED',
+        'HAPPY', 'HARMONIOUS', 'HEALTHY', 'HEARTFULL', 'HEARTWARMING',
+        'HELPFUL', 'HONEST', 'HOPEFUL', 'HUMOROUS',
+        'ILLUMINATED', 'IMAGINATIVE', 'IMPARTIAL', 'INCOMPARABLE',
+        'INCREDIBLE', 'INDEPENDENT', 'INEFFABLE', 'INNOVATIVE',
+        'INSPIRATIONAL', 'INSPIRED', 'INTELLECTUAL', 'INTELLIGENT',
+        'INTUITIVE', 'INVENTIVE', 'INVIGORATED', 'INVOLVED', 'IRRESISTIBLE',
+        'JAZZED', 'JOLLY', 'JOVIAL', 'JOYFUL', 'JOYOUS', 'JUBILANT', 'JUST',
+        'KIND', 'KNOWINGLY', 'KNOWLEDGEABLE',
+        'LIVELY', 'LOYAL', 'LUCKY', 'LUXURIOUS',
+        'MAGICAL', 'MAGNIFICENT', 'MARVELOUS', 'MEMORABLE', 'MINDFUL',
+        'MIRACLE', 'MIRACULOUS', 'MIRTHFUL', 'MODEST',
+        'NEAT', 'NICE', 'NOBLE',
+        'OPTIMISTIC', 'OPULENT', 'ORIGINAL', 'OUTSTANDING',
+        'PASSIONATE', 'PATIENT', 'PEACEFUL', 'PERFECT', 'PERSISTENT',
+        'PHILOSOPHICAL', 'PIONEERING', 'PLACID', 'PLAYFUL', 'PLUCKY',
+        'POLITE', 'POSITIVE', 'POWERFUL', 'PRACTICAL',
+        'PRECIOUS', 'PROPITIOUS', 'PROSPEROUS',
+        'RADIANT', 'RATIONAL', 'READY', 'RECEPTIVE',
+        'REFRESHED', 'REJUVENATED', 'RELAXED', 'RELIABLE',
+        'RELIEVED', 'REMARKABLE', 'RENEWED', 'RESERVED',
+        'RESILIENT', 'RESOURCEFUL',
+        'SAFE', 'SATISFIED', 'SECURED',
+        'SENSATIONAL', 'SENSIBLE', 'SENSITIVE',
+        'SERENE', 'SHINING', 'SHY', 'SINCERE',
+        'SMART', 'SOCIABLE', 'SOULFUL', 'SPECTACULAR',
+        'SPLENDID', 'STELLAR', 'STRAIGHTFORWARD', 'STRONG',
+        'STUPENDOUS', 'SUCCESSFUL', 'SUPER', 'SUSTAINED', 'SYMPATHETIC',
+        'THANKFUL', 'THOUGHTFUL', 'THRILLED', 'THRIVING',
+        'TIDY', 'TOUGH', 'TRANQUIL', 'TRIUMPHANT', 'TRUSTING',
+        'ULTIMATE', 'UNASSUMING', 'UNBELIEVABLE',
+        'UNDERSTANDING', 'UNIQUE', 'UNLIMITED', 'UNREAL', 'UPLIFTED',
+        'VALUABLE', 'VERSATILE', 'VIBRANT', 'VICTORIOUS', 'VIVACIOUS',
+        'WARM', 'WARMHEARTED', 'WEALTHY', 'WELCOMED', 'WHOLE',
+        'WHOLEHEARTEDLY', 'WILLING', 'WISE', 'WITTY', 'WONDERFUL', 'WONDROUS', 'WORTHY',
+        'YOUTHFUL', 'ZAPPY', 'ZESTFUL'
+    ] as string[]
 }
+
+export const nameGenerator = new NameGenerator();
