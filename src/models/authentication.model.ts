@@ -53,9 +53,9 @@ export class AuthenticationModel {
     }
 
     public async createGuestAccount() {
-        const guestPass = passwords.genRandomString(30);
-        const username = nameGenerator.getName();
-        const passwordData = await passwords.getHashedPassword(guestPass);
+        const guestPassword = passwords.genRandomString(30);
+        const username = await nameGenerator.getGuestName();
+        const passwordData = await passwords.getHashedPassword(guestPassword);
         const queryResult = await db.query(`
             INSERT INTO CCG.Account (
                 username,
@@ -71,7 +71,13 @@ export class AuthenticationModel {
             ]);
         let result = queryResult.rows[0];
         await addCollection(result.accountID);
-        return this.getAuthenticationResponse(result.accountID, username);
+        let authResp = this.getAuthenticationResponse(result.accountID, username);
+        return {
+            token: authResp.token,
+            mpToken: authResp.mpToken,
+            username: authResp.username,
+            password: guestPassword
+        };
     }
 
     public async login(usernameOrPassword: string, password: string) {

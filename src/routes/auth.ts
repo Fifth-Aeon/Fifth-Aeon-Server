@@ -20,6 +20,16 @@ router.post('/register', validators.requiredAttributes(['username', 'email', 'pa
     }
 });
 
+router.post('/registerGuest', async (req, res, next) => {
+    try {
+        const response = await authenticationModel.createGuestAccount();
+        res.status(201)
+            .json(response);
+    } catch (e) {
+        next(e);
+    }
+});
+
 router.post('/login', validators.requiredAttributes(['usernameOrEmail', 'password']), async (req, res, next) => {
     try {
         const result = await authenticationModel.login(req.body.usernameOrEmail, req.body.password);

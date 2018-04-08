@@ -1,6 +1,7 @@
 import { sample } from 'lodash';
 import { passwords } from './passwords';
 import { db } from './db';
+const namor = require('namor');
 
 
 export class NameGenerator {
@@ -17,17 +18,16 @@ export class NameGenerator {
         return guestName;
     }
 
-    private generateGuestUsername() {
-        let guestName = sample(this.guestNames);
-        let adj1 = '', adj2 = '', name = '';
+    private generateGuestUsername(): string {
+        let name: string = namor.generate({ 
+            words: 2, 
+            numbers: 0,
+            char: ' '
+        });
 
-        while (adj1 === adj2 || name.length > 30) {
-            adj1 = sample(this.positiveAdjectives);
-            adj2 = sample(this.positiveAdjectives);
-            name = this.properCase(`${adj1} ${adj2} ${guestName}`);
-        }
-
-        return name;
+        if (name.length > 30)
+            return this.generateGuestUsername();
+        return this.properCase(name);
     }
 
     private properCase(word: string) {
