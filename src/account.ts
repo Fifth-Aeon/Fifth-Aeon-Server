@@ -13,7 +13,7 @@ export class Account {
 
     constructor(token: string, name: string) {
         this.token = token;
-        this.username = name || ng.getName();
+        this.username = name;
         this.gameId = null;
         this.freshen();
     }
