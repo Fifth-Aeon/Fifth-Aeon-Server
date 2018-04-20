@@ -5,7 +5,7 @@ CREATE TYPE CCG.USER_ROLE AS ENUM ('guest', 'user', 'mod', 'admin');
 CREATE TABLE CCG.Account (
     accountID           SERIAL PRIMARY KEY,
     username            VARCHAR(30) NOT NULL CHECK(username SIMILAR TO '[a-zA-Z0-9]+( [a-zA-Z0-9]+)*'),
-    email               VARCHAR(254) NOT NULL,
+    email               VARCHAR(254),
     emailVerified       BOOLEAN DEFAULT false NOT NULL,
     banned              BOOLEAN DEFAULT false NOT NULL,
     joined              DATE DEFAULT CURRENT_DATE NOT NULL,
