@@ -37,7 +37,7 @@ class EmailMailer {
         }
     }
 
-    public async sendVerificationEmail(targetEmail: string, accountID: number) {
+    public async sendVerificationEmail(targetEmail: string, username: string, accountID: number) {
         if (!this.canSend) return;
         const token = passwords.createEmailVerificationToken(accountID)
         const url = `${EmailMailer.domain}/verify/${token}`;
@@ -48,8 +48,9 @@ class EmailMailer {
                 subject: 'Email Verification',
                 text: `Please verify your emaill address by visiting ${url}`,
                 html: `
-    <p>Thank you for creating an account on ${EmailMailer.siteName}.</p>
-    <p>Please verify your email address by clicking <a href="${url}" target="_blank">${url}</a>.</p>`,
+    <p>Thank you ${username} for creating an account on ${EmailMailer.siteName}.</p>
+    <p>Please verify your email address by clicking <a href="${url}" target="_blank">${url}</a>.</p>
+    <p>Once your email has been verified you will receive two free card packs.</p>`,
             });
         } catch (err) {
             console.error(err);
