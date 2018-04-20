@@ -24,12 +24,12 @@ router.post('/openPack', passwords.authorize, async (req, res, next) => {
         const user: UserData = (req as any).user;
         let collection = new Collection(await getCollection(user.uid));
         if (!collection.canOpenBooster()) {
-            res.status(400).send('No packs to open.');
+            res.status(400).json({ message: 'No packs to open.' });
             return;
         }
         let packContents = collection.openBooster()
         await saveCollection(collection.getSavable(), user.uid);
-        res.json( packContents );
+        res.json(packContents);
     } catch (e) {
         next(e);
     }

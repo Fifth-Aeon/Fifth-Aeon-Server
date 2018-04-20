@@ -46,8 +46,8 @@ export class AuthenticationModel {
                 passwordData.hash,
                 passwordData.salt
             ]);
-        let result = queryResult.rows[0];
-        email.sendVerificationEmail(result.email, result.accountid);
+        let result: { accountID: number, email: string } = queryResult.rows[0];
+        email.sendVerificationEmail(result.email, data.username, result.accountID);
         await addCollection(result.accountID);
         return this.getAuthenticationResponse(result.accountID, data.username);
     }
@@ -70,7 +70,7 @@ export class AuthenticationModel {
                 passwordData.salt
             ]);
         let result = queryResult.rows[0];
-        await addCollection(result.accountID);
+        await addCollection(result.accountID, true);
         let authResp = this.getAuthenticationResponse(result.accountID, username);
         return {
             token: authResp.token,

@@ -4,7 +4,7 @@ import * as express from 'express';
 import { Response } from 'express';
 import { validators } from './validators';
 import { email } from '../email';
-import { addCollection } from '../models/cards';
+import { addCollection, rewardPlayer } from '../models/cards';
 import { authenticationModel, UserData } from '../models/authentication.model';
 
 const router = express.Router();
@@ -55,11 +55,17 @@ router.post('/verifyEmail', passwords.authorize, async (req, res, next) => {
     try {
         let user: UserData = (req as any).user;
         if (user.email && user.uid) {
-            await db.query(`
+            const verificationResult = await db.query(`
                 UPDATE CCG.Account
                 SET emailVerified = true
-                WHERE accountID = $1;
+                WHERE accountID = $1
+                  AND emailVerified = false;
             `, [user.uid]);
+
+            if (verificationResult.rowCount === 1) {
+                rewardPlayer(user, { packs: 2, gold: 0 });
+            }
+
             res.status(200).json({
                 message: 'done'
             });
@@ -116,6 +122,11 @@ router.post('/requestReset', validators.requiredAttributes(['usernameOrEmail']),
     } catch (err) {
         next(err);
     }
+});
+
+
+router.get('/testAuth', passwords.authorize, async (req, res) => {
+    res.json((req as any).user);
 });
 
 export const authRoutes = router;

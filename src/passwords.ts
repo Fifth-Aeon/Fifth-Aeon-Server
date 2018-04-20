@@ -25,6 +25,7 @@ class PasswordGenerator {
     }
 
     public createEmailVerificationToken(accountID: number) {
+        console.log({ uid: accountID, email: true });
         return this.signJWT({ uid: accountID, email: true });
     }
 

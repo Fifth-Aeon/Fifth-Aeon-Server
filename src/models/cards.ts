@@ -1,21 +1,31 @@
 import { db } from '../db';
 import { DeckList, SavedDeck } from '../game_model/deckList';
-import { Collection, SavedCollection } from '../game_model/collection';
+import { Collection, SavedCollection, Rewards } from '../game_model/collection';
 import { QueryResult } from 'pg';
 import { getStarterDecks } from '../game_model/scenarios/decks';
+import { UserData } from './authentication.model';
 
 
-export async function addCollection(ownerID: number) {
+export async function addCollection(ownerID: number, isGuest: boolean = false) {
 
     let collection = new Collection();
     let decks: DeckList[] = [];
     let starters = getStarterDecks();
+    if (!isGuest)
+        collection.addReward({ packs: 2, gold: 0 });
+
     for (let deck of starters) {
         decks.push(deck.clone());
         collection.addDeck(deck);
         await saveDeck(deck.getSavable(), ownerID);
     }
     await saveCollection(collection.getSavable(), ownerID);
+}
+
+export async function rewardPlayer(user: UserData, reward: Rewards) {
+    let collection = new Collection(await getCollection(user.uid));
+    collection.addReward(reward);
+    await saveCollection(collection.getSavable(), user.uid);
 }
 
 export async function getCollection(ownerID: number) {
