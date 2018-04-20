@@ -59,11 +59,13 @@ export class AuthenticationModel {
         const queryResult = await db.query(`
             INSERT INTO CCG.Account (
                 username,
+                role,
                 password,
                 salt
-            ) VALUES ($1, $2, $3)
+            ) VALUES ($1, $2, $3, $4)
             RETURNING accountID as "accountID", email;`, [
                 username,
+                'guest',
                 passwordData.hash,
                 passwordData.salt
             ]);
