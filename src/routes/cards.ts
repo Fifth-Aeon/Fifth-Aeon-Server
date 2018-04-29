@@ -41,12 +41,19 @@ router.post('/buy', passwords.authorize, async (req, res, next) => {
         const user: UserData = (req as any).user;
         let collection = new Collection(await getCollection(user.uid));
         if (!collection.canBuyPack()) {
-            res.status(400).send('Not enough gold to buy that.');
+            res.status(400).send({
+                msg: 'Not enough gold to buy that.',
+                packs: collection.getPackCount(),
+                gold: collection.getGold()
+            });
             return;
         }
         collection.buyPack()
         await saveCollection(collection.getSavable(), user.uid);
-        res.sendStatus(200);
+        res.sendStatus(200).json({
+            packs: collection.getPackCount(),
+            gold: collection.getGold()
+        });
     } catch (e) {
         next(e);
     }
