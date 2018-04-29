@@ -1,24 +1,39 @@
-import * as WebSocket from 'ws';
-
-import { getToken } from './tokens';
 import { Queue } from 'typescript-collections';
+import * as WebSocket from 'ws';
 import { Message, MessageType } from './message';
-import * as express from 'express';
+
 
 /**
- * Abstract class used to communicate via websockets.
+ *  A server side messenger that uses websockets to send real time messages to many clients
  * 
- * @class Messenger
+ * @class ServerMessenger
+ * @extends {Messenger}
  */
-abstract class Messenger {
-    protected handlers: Map<MessageType, (message: Message) => void>;
-    protected name: string;
-    protected id: string;
+export class ServerMessenger {
+
     public onMessage: (message: Message) => void = () => null;
 
-    constructor(isServer: boolean) {
-        this.name = isServer ? 'Server' : 'Client';
-        this.handlers = new Map();
+    private ws: WebSocket.Server;
+    private connections = new Map<string, any>();
+    private queues = new Map<string, Queue<string>>()
+    private handlers = new Map<MessageType, (message: Message) => void>();
+    private id = 'server';
+
+    constructor(server: any) {
+        this.ws = new WebSocket.Server({ server });
+        this.ws.on('error', err => {
+            console.error('Server Websocket Error:\n', err);
+        })
+        this.ws.on('connection', (ws) => {
+            ws.on('message', (data) => {
+                let msg = JSON.parse(data.toString()) as Message;
+                this.connections.set(msg.source, ws);
+            });
+            ws.on('error', (err) => console.error('client ws error', err));
+            this.makeMessageHandler(ws);
+        });
+        this.addHandeler(MessageType.Connect, (msg) => this.checkQueue(msg.source));
+        this.addHandeler(MessageType.Ping, (msg) => null);
     }
 
     private readMessage(data: any): Message | null {
@@ -32,7 +47,7 @@ abstract class Messenger {
         }
     }
 
-    protected makeMessageHandler(ws: any) {
+    private makeMessageHandler(ws: any) {
         ws.on('message', (data: any, flags: any) => {
             let message = this.readMessage(data);
             if (!message) {
@@ -48,7 +63,7 @@ abstract class Messenger {
         });
     }
 
-    protected makeMessage(messageType: MessageType, data: string | object): string {
+    private makeMessage(messageType: MessageType, data: string | object): string {
         return JSON.stringify({
             type: MessageType[messageType],
             data: data,
@@ -63,45 +78,11 @@ abstract class Messenger {
         this.handlers.set(messageType, callback);
     }
 
-
-    protected sendMessage(messageType: MessageType, data: string | object, ws: WebSocket): boolean {
+    private sendMessage(messageType: MessageType, data: string | object, ws: WebSocket): boolean {
         if (ws.readyState !== ws.OPEN)
             return false;
         ws.send(this.makeMessage(messageType, data));
         return true;
-    }
-}
-
-/**
- *  Version of the messenger built to be used by the server.
- * 
- * @class ServerMessenger
- * @extends {Messenger}
- */
-export class ServerMessenger extends Messenger {
-    private ws: WebSocket.Server;
-    protected connections: Map<string, any>;
-    protected queues: Map<string, Queue<string>>;
-
-    constructor(server: any) {
-        super(true);
-        this.connections = new Map<string, any>();
-        this.queues = new Map<string, Queue<string>>();
-        this.ws = new WebSocket.Server({ server });
-        this.ws.on('error', err => {
-            console.error('Server Websocket Error:\n', err);
-        })
-        this.id = 'server';
-        this.ws.on('connection', (ws) => {
-            ws.on('message', (data) => {
-                let msg = JSON.parse(data.toString()) as Message;
-                this.connections.set(msg.source, ws);
-            });
-            ws.on('error', (err) => console.error('client ws error', err));
-            this.makeMessageHandler(ws);
-        });
-        this.addHandeler(MessageType.Connect, (msg) => this.checkQueue(msg.source));
-        this.addHandeler(MessageType.Ping, (msg) => null);
     }
 
     public addQueue(token: string) {
@@ -109,10 +90,10 @@ export class ServerMessenger extends Messenger {
     }
 
     public deleteUser(token: string) {
-        if (this.connections.has(token))
-            this.connections.delete(token);
-        if (this.connections.has(token))
-            this.queues.delete(token);
+        if (!this.connections.has(token))
+            return;
+        this.connections.delete(token);
+        this.queues.delete(token);
     }
 
     /**
@@ -163,10 +144,10 @@ export class ServerMessenger extends Messenger {
             ws.send(msg);
         } else {
             let queue = this.queues.get(target)
-            if (queue) {
+            if (queue)
                 queue.add(msg);
-            } else
-                console.error('ws closed, message lost');
+            else
+                console.error('Websocket closed with no coresponding queue, message lost');
         }
     }
 }
