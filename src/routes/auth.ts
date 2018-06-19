@@ -1,11 +1,10 @@
-import { db } from '../db';
-import { passwords } from '../passwords.js';
 import * as express from 'express';
-import { Response } from 'express';
-import { validators } from './validators';
+import { db } from '../db';
 import { email } from '../email';
-import { addCollection, rewardPlayer } from '../models/cards';
 import { authenticationModel, UserData } from '../models/authentication.model';
+import { rewardPlayer } from '../models/cards';
+import { passwords } from '../passwords.js';
+import { validators } from './validators';
 
 const router = express.Router();
 
@@ -13,6 +12,17 @@ const router = express.Router();
 router.post('/register', validators.requiredAttributes(['username', 'email', 'password']), async (req, res, next) => {
     try {
         const response = await authenticationModel.registerAccount(req.body);
+        res.status(201)
+            .json(response);
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.post('/upgradeGuest', passwords.authorize, validators.requiredAttributes(['username', 'email', 'password']), async (req, res, next) => {
+    try {
+        const user: UserData = (req as any).user;
+        const response = await authenticationModel.upgradeGuestAccount(user, req.body);
         res.status(201)
             .json(response);
     } catch (e) {
