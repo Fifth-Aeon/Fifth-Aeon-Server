@@ -8,15 +8,15 @@ const router = express.Router();
 router.post('/startDraft', passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        const worked = await draftModel.startDraft(user);
-        if (worked !== false)
+        const result = await draftModel.startDraft(user);
+        if (typeof result !== 'string')
             res.json({
                 message: 'Draft started',
-                data: worked
+                data: result
             });
         else 
             res.status(400).json({
-                message: 'Cannot start drart'
+                message: 'Cannot start draft: ' + result
             });
     } catch (e) {
         next(e);
@@ -33,7 +33,7 @@ router.post('/updateDraft', passwords.authorize, async (req, res, next) => {
     }
 });
 
-router.post('/getDraft', passwords.authorize, async (req, res, next) => {
+router.get('/getDraft', passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
         let draftData = await draftModel.getDraft(user);

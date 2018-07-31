@@ -16,8 +16,10 @@ class DraftModel {
      */
     public async startDraft(user: UserData) {
         let collection = new Collection(await getCollection(user.uid));
-        if (collection.getGold() < Draft.cost || (await this.getDraft(user)) !== false)
-            return false;
+        if (collection.getGold() < Draft.cost)
+            return 'Not Enough Gold';
+        if ((await this.getDraft(user)) !== false)
+            return 'Already in draft';
         collection.removeGold(Draft.cost);
         const draft = new Draft();
         await db.query(`
@@ -65,6 +67,10 @@ class DraftModel {
         const draft = new Draft(data);
         let rewards = draft.getRewards();
         await rewardPlayer(user, rewards);
+        await db.query(`
+            DELETE FROM CCG.Draft
+            WHERE accountID = $1;
+        `, [user.uid]);
         return rewards
     }
 
