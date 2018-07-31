@@ -7,3 +7,10 @@ ALTER TYPE CCG.USER_ROLE ADD VALUE 'guest' BEFORE 'user';
 ALTER TABLE CCG.Account ALTER COLUMN email DROP NOT NULL;
 
 -- End Migrations for Guest Accounts ----------------------------------------------
+
+-- Add Simple Draft Data 
+CREATE TABLE CCG.Draft (
+    accountID INTEGER NOT NULL,
+    draftData JSON NOT NULL,
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
+);

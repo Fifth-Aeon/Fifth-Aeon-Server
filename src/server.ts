@@ -19,6 +19,7 @@ import { cardRoutes } from './routes/cards';
 import { authenticationModel } from './models/authentication.model';
 import { NextFunction } from 'express-serve-static-core';
 import { DeckList } from './game_model/deckList';
+import { draftRouter } from './routes/draft';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -68,6 +69,7 @@ export class Server {
         this.app.use('/api/auth', authRoutes);
         this.app.use('/api/availability', avalibilityRoutes);
         this.app.use('/api/cards', cardRoutes);
+        this.app.use('/api/drafts', draftRouter);
         this.app.get('/report', (req, res) => {
             res.send(this.getReport());
         });
