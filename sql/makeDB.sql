@@ -26,3 +26,10 @@ CREATE TABLE CCG.Deck (
     deckData            JSON,
     FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
 );
+
+-- Draft Storage
+CREATE TABLE CCG.Draft (
+    accountID INTEGER NOT NULL,
+    draftData JSON NOT NULL,
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
+);
