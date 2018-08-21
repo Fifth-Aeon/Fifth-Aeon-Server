@@ -1,9 +1,9 @@
 import * as express from 'express';
-import { db } from '../db';
-import { email } from '../email';
-import { authenticationModel, UserData } from '../models/authentication.model';
+import { db } from 'db';
+import { email } from 'email';
+import { authenticationModel, UserData } from 'models/authentication.model';
 import { collectionModel } from 'models/collection.model';
-import { passwords } from '../passwords.js';
+import { passwords } from 'passwords';
 import { validators } from './validators';
 
 const router = express.Router();

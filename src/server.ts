@@ -6,7 +6,7 @@ import { GameServer } from './gameServer';
 import { MatchQueue } from './matchmaking';
 import { ErrorHandeler, ErrorType } from './errors';
 
-import { authRoutes } from './routes/auth';
+import { authRoutes } from 'routes/authenticaiton.routes';
 
 import * as os from 'os';
 import * as morgan from 'morgan';
@@ -14,12 +14,12 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import { db, startDB } from "./db";
-import { avalibilityRoutes } from './routes/avalibility';
+import { avalibilityRoutes } from 'routes/avalibility.routes';
 import { cardRoutes } from 'routes/collection.routes';
 import { authenticationModel } from './models/authentication.model';
 import { NextFunction } from 'express-serve-static-core';
 import { DeckList } from './game_model/deckList';
-import { draftRouter } from './routes/draft';
+import { draftRouter } from 'routes/draft.routes';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
