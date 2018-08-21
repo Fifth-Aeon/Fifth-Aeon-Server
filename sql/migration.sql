@@ -14,3 +14,6 @@ CREATE TABLE CCG.Draft (
     draftData JSON NOT NULL,
     FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
 );
+
+-- Add last login time
+ALTER TABLE CCG.Account ADD COLUMN lastActive TIMESTAMP DEFAULT joined NOT NULL;

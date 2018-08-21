@@ -1,11 +1,34 @@
 import * as express from 'express';
 import { passwords } from '../passwords.js';
 import { validators } from './validators';
-import { saveDeck, saveCollection, getCollection, getDecks, deleteDeck } from '../models/cards';
+import { saveDeck, saveCollection, getCollection, getDecks, deleteDeck, checkDailyRewards } from '../models/cards';
 import { Collection } from '../game_model/collection.js';
 import { UserData } from '../models/authentication.model.js';
 
 const router = express.Router();
+
+
+router.get('/checkDaily', passwords.authorize, async (req, res, next) => {
+    try {
+        const user: UserData = (req as any).user;
+        const result = await checkDailyRewards(user);
+        if (typeof result !== 'number')
+            res.status(200)
+                .json({
+                    daily: true,
+                    cards: result
+                });
+        else
+            res.status(200)
+                .json({
+                    daily: false,
+                    nextRewardTime: result
+                });
+    } catch (e) {
+        next(e);
+    }
+});
+
 
 router.post('/reward', passwords.authorize, async (req, res, next) => {
     try {

@@ -9,6 +9,7 @@ CREATE TABLE CCG.Account (
     emailVerified       BOOLEAN DEFAULT false NOT NULL,
     banned              BOOLEAN DEFAULT false NOT NULL,
     joined              DATE DEFAULT CURRENT_DATE NOT NULL,
+    lastActive          TIMESTAMP DEFAULT CURRENT_DATE NOT NULL,
     skillLevel          SMALLINT DEFAULT 800,
     collection          JSON,
     password            VARCHAR(256) NOT NULL CHECK (LENGTH(password) >= 8),

@@ -5,6 +5,33 @@ import { QueryResult } from 'pg';
 import { getStarterDecks } from '../game_model/scenarios/decks';
 import { UserData } from './authentication.model';
 
+const dailyRewardTime = 1000 * 60 * 60 * 24;
+
+
+export async function checkDailyRewards(user: UserData) {
+    let data = await db.query(`
+        SELECT lastActive as "lastActive"
+        FROM CCG.Account 
+        WHERE accountID = $1;`,
+        [user.uid]);
+    let lastActive = data.rows[0].lastActive as Date;
+    let elapsed = (Date.now() - lastActive.getTime());
+    if (elapsed > dailyRewardTime) {
+        db.query(`
+            UPDATE CCG.Account
+            SET lastActive = CURRENT_TIMESTAMP
+            WHERE accountID = $1;
+        `, [user.uid]);
+        let cardsAwareded = await rewardPlayer(user, {
+            gold: 0,
+            packs: 0,
+            cards: 1
+        });
+        return cardsAwareded;
+    }
+    return  dailyRewardTime - elapsed;
+}
+
 
 export async function addCollection(ownerID: number, isGuest: boolean = false) {
 
@@ -24,8 +51,9 @@ export async function addCollection(ownerID: number, isGuest: boolean = false) {
 
 export async function rewardPlayer(user: UserData, reward: Rewards) {
     let collection = new Collection(await getCollection(user.uid));
-    collection.addReward(reward);
+    let awareded = collection.addReward(reward);
     await saveCollection(collection.getSavable(), user.uid);
+    return awareded;
 }
 
 export async function getCollection(ownerID: number) {
