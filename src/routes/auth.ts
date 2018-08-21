@@ -2,7 +2,7 @@ import * as express from 'express';
 import { db } from '../db';
 import { email } from '../email';
 import { authenticationModel, UserData } from '../models/authentication.model';
-import { rewardPlayer } from '../models/cards';
+import { collectionModel } from 'models/collection.model';
 import { passwords } from '../passwords.js';
 import { validators } from './validators';
 
@@ -73,7 +73,7 @@ router.post('/verifyEmail', passwords.authorize, async (req, res, next) => {
             `, [user.uid]);
 
             if (verificationResult.rowCount === 1) {
-                rewardPlayer(user, { packs: 2, gold: 0 });
+                collectionModel.rewardPlayer(user, { packs: 2, gold: 0 });
             }
 
             res.status(200).json({

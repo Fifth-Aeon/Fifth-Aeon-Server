@@ -1,7 +1,7 @@
 import { Draft, SavedDraft } from "../game_model/draft";
 import { db } from "../db";
 import { UserData } from "./authentication.model";
-import { getCollection, saveCollection, rewardPlayer } from "./cards";
+import { collectionModel } from "./collection.model";
 import { Collection } from "../game_model/collection";
 
 
@@ -15,7 +15,7 @@ class DraftModel {
      * @memberof DraftModel
      */
     public async startDraft(user: UserData) {
-        let collection = new Collection(await getCollection(user.uid));
+        let collection = new Collection(await collectionModel.getCollection(user.uid));
         if (collection.getGold() < Draft.cost)
             return 'Not Enough Gold';
         if ((await this.getDraft(user)) !== false)
@@ -26,7 +26,7 @@ class DraftModel {
             INSERT INTO CCG.Draft (accountID, draftData) 
             VALUES ($1, $2);
         `, [user.uid, draft]);
-        await saveCollection(collection.getSavable(), user.uid);
+        await collectionModel.saveCollection(collection.getSavable(), user.uid);
         return draft.toSavable();
     }
 
@@ -66,7 +66,7 @@ class DraftModel {
     public async endDraft(user: UserData, data: SavedDraft) {
         const draft = new Draft(data);
         let rewards = draft.getRewards();
-        await rewardPlayer(user, rewards);
+        await collectionModel.rewardPlayer(user, rewards);
         await db.query(`
             DELETE FROM CCG.Draft
             WHERE accountID = $1;

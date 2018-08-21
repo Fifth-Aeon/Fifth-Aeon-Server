@@ -15,7 +15,7 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import { db, startDB } from "./db";
 import { avalibilityRoutes } from './routes/avalibility';
-import { cardRoutes } from './routes/cards';
+import { cardRoutes } from 'routes/collection.routes';
 import { authenticationModel } from './models/authentication.model';
 import { NextFunction } from 'express-serve-static-core';
 import { DeckList } from './game_model/deckList';

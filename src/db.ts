@@ -1,9 +1,6 @@
-import { Pool, Client } from 'pg';
 import * as fs from 'fs';
-import { DeckList } from './game_model/deckList';
-import { saveDeck, getDecks } from './models/cards';
+import { Pool } from 'pg';
 import { config } from './config';
-
 
 export const db = new Pool({
   connectionString: config.connectionString

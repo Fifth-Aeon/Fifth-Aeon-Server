@@ -2,7 +2,7 @@ import { Server } from "../server";
 import { passwords } from "../passwords";
 import { db } from "../db";
 import { email } from "../email";
-import { addCollection, rewardPlayer } from "./cards";
+import { collectionModel } from "./collection.model";
 import { nameGenerator } from "../nameGenerator";
 
 export interface UserData {
@@ -48,7 +48,7 @@ export class AuthenticationModel {
             ]);
         let result: { accountID: number, email: string } = queryResult.rows[0];
         email.sendVerificationEmail(result.email, data.username, result.accountID);
-        await addCollection(result.accountID);
+        await collectionModel.addCollection(result.accountID);
         return this.getAuthenticationResponse(result.accountID, data.username);
     }
 
@@ -70,7 +70,7 @@ export class AuthenticationModel {
                 passwordData.salt
             ]);
         let result = queryResult.rows[0];
-        await addCollection(result.accountID, true);
+        await collectionModel.addCollection(result.accountID, true);
         let authResp = this.getAuthenticationResponse(result.accountID, username);
         return {
             token: authResp.token,
@@ -101,7 +101,7 @@ export class AuthenticationModel {
         if (queryResult.rowCount === 0)
             return false;
         let result: { accountID: number, email: string } = queryResult.rows[0];
-        rewardPlayer(user, { packs: 2, gold: 0 });
+        collectionModel.rewardPlayer(user, { packs: 2, gold: 0 });
         email.sendVerificationEmail(result.email, data.username, result.accountID);
         return this.getAuthenticationResponse(result.accountID, data.username);
     }
