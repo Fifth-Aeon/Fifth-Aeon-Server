@@ -1,9 +1,9 @@
 import * as express from 'express';
-import { passwords } from 'passwords.js';
-import { validators } from './validators.js';
-import { collectionModel } from 'models/collection.model.js';
-import { Collection } from 'game_model/collection.js';
-import { UserData } from 'models/authentication.model.js';
+import { passwords } from '../passwords';
+import { validators } from './validators';
+import { collectionModel } from '../models/collection.model';
+import { Collection } from '../game_model/collection';
+import { UserData } from '../models/authentication.model';
 
 const router = express.Router();
 

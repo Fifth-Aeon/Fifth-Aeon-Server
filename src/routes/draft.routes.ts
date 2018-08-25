@@ -1,7 +1,7 @@
 import *  as express from 'express';
-import { draftModel } from 'models/draft.model.js';
-import { UserData } from 'models/authentication.model.js';
-import { passwords } from 'passwords.js';
+import { draftModel } from '../models/draft.model';
+import { UserData } from '../models/authentication.model';
+import { passwords } from '../passwords';
 
 const router = express.Router();
 

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const validators = require('./validators');
-import { db } from "db";
+import { db } from "../db";
 import { NextFunction, Request, Response } from "express";
 
 

@@ -1,8 +1,8 @@
-import { db } from 'db';
-import { DeckList, SavedDeck } from 'game_model/deckList';
-import { Collection, SavedCollection, Rewards } from 'game_model/collection';
+import { db } from '../db';
+import { DeckList, SavedDeck } from '../game_model/deckList';
+import { Collection, SavedCollection, Rewards } from '../game_model/collection';
 import { QueryResult } from 'pg';
-import { getStarterDecks } from 'game_model/scenarios/decks';
+import { getStarterDecks } from '../game_model/scenarios/decks';
 import { UserData } from './authentication.model';
 
 class CollectionModel {

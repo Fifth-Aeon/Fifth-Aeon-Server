@@ -1,25 +1,25 @@
-import { ServerMessenger } from './messenger';
-import { Message, MessageType } from './message';
-import { getToken } from './tokens';
-import { Account } from './account';
-import { GameServer } from './gameServer';
-import { MatchQueue } from './matchmaking';
-import { ErrorHandeler, ErrorType } from './errors';
-
-import { authRoutes } from 'routes/authenticaiton.routes';
-
-import * as os from 'os';
-import * as morgan from 'morgan';
-import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
-import { db, startDB } from "./db";
-import { avalibilityRoutes } from 'routes/avalibility.routes';
-import { cardRoutes } from 'routes/collection.routes';
-import { authenticationModel } from './models/authentication.model';
+import * as express from 'express';
 import { NextFunction } from 'express-serve-static-core';
+import * as morgan from 'morgan';
+import * as os from 'os';
+import { authRoutes } from './routes/authenticaiton.routes';
+import { avalibilityRoutes } from './routes/avalibility.routes';
+import { cardRoutes } from './routes/collection.routes';
+import { draftRouter } from './routes/draft.routes';
+import { Account } from './account';
+import { startDB } from "./db";
+import { ErrorHandeler, ErrorType } from './errors';
+import { GameServer } from './gameServer';
 import { DeckList } from './game_model/deckList';
-import { draftRouter } from 'routes/draft.routes';
+import { MatchQueue } from './matchmaking';
+import { Message, MessageType } from './message';
+import { ServerMessenger } from './messenger';
+import { authenticationModel } from './models/authentication.model';
+import { getToken } from './tokens';
+
+
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;

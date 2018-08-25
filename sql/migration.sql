@@ -16,4 +16,5 @@ CREATE TABLE CCG.Draft (
 );
 
 -- Add last login time
-ALTER TABLE CCG.Account ADD COLUMN lastActive TIMESTAMP DEFAULT joined NOT NULL;
+ALTER TABLE CCG.Account ADD COLUMN lastActive TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
+UPDATE CCG.Account SET lastActive = joined;
