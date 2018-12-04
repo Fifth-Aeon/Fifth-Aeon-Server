@@ -15,6 +15,7 @@ export class GameServer {
     private id: string;
 
     constructor(private messenger: ServerMessenger, private server: Server, id: string, player1: Account, player2: Account) {
+        ServerGame.setSeed(Math.random());
         this.game = new ServerGame('server', standardFormat, [player1.deck, player2.deck]);
         this.id = id;
         this.playerAccounts.push(player1);
