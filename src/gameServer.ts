@@ -3,11 +3,11 @@ import { Card } from './game_model/card';
 import { ServerMessenger } from './messenger'
 import { ErrorType } from './errors'
 import { Message, MessageType } from './message';
-import { Game, GameAction, GameActionType } from './game_model/game';
 import { ServerGame } from './game_model/serverGame';
-import { GameFormat, standardFormat } from './game_model/gameFormat';
+import { standardFormat } from './game_model/gameFormat';
 import { Server } from './server';
 import { Account } from './account';
+import { GameAction, GameActionType } from 'game_model/events/gameAction';
 
 export class GameServer {
     private playerAccounts: Account[] = [];

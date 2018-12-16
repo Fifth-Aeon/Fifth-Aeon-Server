@@ -1,5 +1,3 @@
-
-
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';

@@ -1,5 +1,3 @@
-import { LinkedDictionary } from 'typescript-collections';
-
 import { ServerMessenger } from './messenger';
 import { Message, MessageType } from './message';
 import { ErrorHandeler, ErrorType } from './errors';
