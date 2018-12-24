@@ -38,11 +38,11 @@ export class GameServer {
                 'Cannot take action ' + GameActionType[action.type])
             return;
         }
-        this.playerAccounts.forEach(acc => {
-            events.forEach(event => {
-                this.messenger.sendMessageTo(MessageType.GameEvent, event, acc.token);
-            })
-        })
+        for (let account of this.playerAccounts) {
+            for (let event of events) {
+                this.messenger.sendMessageTo(MessageType.GameEvent, event, account.token);
+            }
+        }
         if (this.game.getWinner() != -1) {
             this.end();
         }
