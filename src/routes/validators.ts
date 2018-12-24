@@ -1,6 +1,4 @@
-import { db } from "../db";
-
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 
 function makeAttributeValidator(params: any) {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -15,12 +13,11 @@ function makeAttributeValidator(params: any) {
             next();
             return;
         }
-        res.status(400)
-            .json({
-                'message': 'Request lacks required parameter(s).',
-                'missing': missing
-            });
-    }
+        res.status(400).json({
+            message: "Request lacks required parameter(s).",
+            missing: missing
+        });
+    };
 }
 
 export const validators = {

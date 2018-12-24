@@ -1,32 +1,30 @@
-import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
-import * as express from 'express';
-import { NextFunction } from 'express-serve-static-core';
-import * as morgan from 'morgan';
-import * as os from 'os';
-import { authRoutes } from './routes/authenticaiton.routes';
-import { avalibilityRoutes } from './routes/avalibility.routes';
-import { cardRoutes } from './routes/collection.routes';
-import { draftRouter } from './routes/draft.routes';
-import { Account } from './account';
+import * as bodyParser from "body-parser";
+import * as cors from "cors";
+import * as express from "express";
+import { NextFunction } from "express-serve-static-core";
+import * as morgan from "morgan";
+import * as os from "os";
+import { authRoutes } from "./routes/authenticaiton.routes";
+import { avalibilityRoutes } from "./routes/avalibility.routes";
+import { cardRoutes } from "./routes/collection.routes";
+import { draftRouter } from "./routes/draft.routes";
+import { Account } from "./account";
 import { startDB } from "./db";
-import { ErrorHandeler, ErrorType } from './errors';
-import { GameServer } from './gameServer';
-import { DeckList } from './game_model/deckList';
-import { MatchQueue } from './matchmaking';
-import { Message, MessageType } from './message';
-import { ServerMessenger } from './messenger';
-import { authenticationModel } from './models/authentication.model';
-import { getToken } from './tokens';
-
-
+import { ErrorHandeler, ErrorType } from "./errors";
+import { GameServer } from "./gameServer";
+import { DeckList } from "./game_model/deckList";
+import { MatchQueue } from "./matchmaking";
+import { Message, MessageType } from "./message";
+import { ServerMessenger } from "./messenger";
+import { authenticationModel } from "./models/authentication.model";
+import { getToken } from "./tokens";
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
 
 /**
  * Server that holds references to all the components of the app
- * 
+ *
  * @export
  * @class Server
  */
@@ -43,18 +41,24 @@ export class Server {
         this.app.use(bodyParser.json());
         this.addRoutes();
         let expressServer = this.app.listen(port, () => {
-            console.log('Server started on port', port);
+            console.log("Server started on port", port);
         });
 
         this.messenger = new ServerMessenger(expressServer);
         this.errors = new ErrorHandeler(this.messenger);
-        this.gameQueue = new MatchQueue(this, this.errors, this.messenger, this.makeGame.bind(this));
+        this.gameQueue = new MatchQueue(
+            this,
+            this.errors,
+            this.messenger,
+            this.makeGame.bind(this)
+        );
 
-        this.messenger.addHandeler(MessageType.SetDeck, (msg) => this.setDeck(msg));
+        this.messenger.addHandeler(MessageType.SetDeck, msg =>
+            this.setDeck(msg)
+        );
         this.messenger.onMessage = (msg: Message) => {
             let account = this.accounts.get(msg.source);
-            if (account)
-                account.freshen();
+            if (account) account.freshen();
         };
 
         this.passMessagesToGames();
@@ -65,28 +69,31 @@ export class Server {
         await startDB();
         authenticationModel.setServer(this);
         this.app.use(cors());
-        this.app.use(morgan('dev'));
-        this.app.use('/api/auth', authRoutes);
-        this.app.use('/api/availability', avalibilityRoutes);
-        this.app.use('/api/cards', cardRoutes);
-        this.app.use('/api/drafts', draftRouter);
-        this.app.get('/report', (req, res) => {
+        this.app.use(morgan("dev"));
+        this.app.use("/api/auth", authRoutes);
+        this.app.use("/api/availability", avalibilityRoutes);
+        this.app.use("/api/cards", cardRoutes);
+        this.app.use("/api/drafts", draftRouter);
+        this.app.get("/report", (req, res) => {
             res.send(this.getReport());
         });
         this.app.use(this.expressErrorHandler as any);
-
     }
 
-    private expressErrorHandler(err: Error, req: Request, res: express.Response, next: NextFunction) {
+    private expressErrorHandler(
+        err: Error,
+        req: Request,
+        res: express.Response,
+        next: NextFunction
+    ) {
         console.error(err);
-        res.status(500)
-            .json({
-                message: err.message || err.name
-            })
+        res.status(500).json({
+            message: err.message || err.name
+        });
     }
 
     private pruneAccount(acc: Account) {
-        console.log('prune', acc.username);
+        console.log("prune", acc.username);
         this.accounts.delete(acc.token);
         this.gameQueue.removeFromQueue(acc.token);
         this.messenger.deleteUser(acc.token);
@@ -97,16 +104,15 @@ export class Server {
     }
 
     private pruneAccounts() {
-        console.log('Pruning acounts');
+        console.log("Pruning acounts");
         let now = Date.now();
-        for (let account of this.accounts.values()) {
-            let time = (now - account.lastUsed.getTime());
+        for (let account of Array.from(this.accounts.values())) {
+            let time = now - account.lastUsed.getTime();
             if (time > cleaningTime) {
                 this.pruneAccount(account);
             }
         }
     }
-
 
     private getReport() {
         return {
@@ -126,7 +132,9 @@ export class Server {
     }
 
     public createMultiplayerUser(username: string) {
-        let existing = Array.from(this.accounts.values()).find(acc => acc.username === username);
+        let existing = Array.from(this.accounts.values()).find(
+            acc => acc.username === username
+        );
         if (existing) {
             return existing;
         }
@@ -139,31 +147,46 @@ export class Server {
     private setDeck(msg: Message) {
         let acc = this.accounts.get(msg.source);
         if (!acc) {
-            this.errors.clientError(msg.source, ErrorType.AuthError, 'You must be logged in to set your deck.');
+            this.errors.clientError(
+                msg.source,
+                ErrorType.AuthError,
+                "You must be logged in to set your deck."
+            );
             return;
         }
 
-        let deck = new DeckList()
+        let deck = new DeckList();
         try {
             acc.deck.fromJson(msg.data.deckList);
         } catch (e) {
-            this.errors.clientError(msg.source, ErrorType.DeckError, 'Invalid Deck.');
+            this.errors.clientError(
+                msg.source,
+                ErrorType.DeckError,
+                "Invalid Deck."
+            );
             acc.deck = new DeckList();
         }
     }
-
 
     private passMessagesToGames() {
         this.messenger.addHandeler(MessageType.GameAction, (msg: Message) => {
             let acc = this.accounts.get(msg.source);
             if (!acc) {
-                this.errors.clientError(msg.source, ErrorType.GameActionError, "Not logged in.");
+                this.errors.clientError(
+                    msg.source,
+                    ErrorType.GameActionError,
+                    "Not logged in."
+                );
                 return;
             }
             let id = acc.getGame();
 
             if (!id || !this.games.has(id)) {
-                this.errors.clientError(msg.source, ErrorType.GameActionError, "Not in game.");
+                this.errors.clientError(
+                    msg.source,
+                    ErrorType.GameActionError,
+                    "Not in game."
+                );
                 return;
             }
             (this.games.get(id) as GameServer).handleAction(msg);
@@ -174,8 +197,7 @@ export class Server {
         let id = getToken();
         let ac1 = this.accounts.get(token1);
         let ac2 = this.accounts.get(token2);
-        if (!ac1 || !ac2)
-            return;
+        if (!ac1 || !ac2) return;
         ac1.setInGame(id);
         ac2.setInGame(id);
         let server = new GameServer(this.messenger, this, id, ac1, ac2);
@@ -184,16 +206,12 @@ export class Server {
     }
 
     public endGame(gameId: string) {
-        if (this.games.has(gameId))
-            this.games.delete(gameId);
+        if (this.games.has(gameId)) this.games.delete(gameId);
         else
-            console.error('Trying to delete non-existant game with id', gameId);
+            console.error("Trying to delete non-existant game with id", gameId);
     }
 
     public getErrorHandler() {
         return this.errors;
     }
-
 }
-
-

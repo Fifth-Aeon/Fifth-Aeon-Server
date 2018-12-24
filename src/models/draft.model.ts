@@ -4,9 +4,7 @@ import { UserData } from "./authentication.model";
 import { collectionModel } from "./collection.model";
 import { Collection } from "../game_model/collection";
 
-
 class DraftModel {
-
     /**
      * Creates a draft for a user if they already have enough gold and arn't already doing one.
      *
@@ -15,17 +13,20 @@ class DraftModel {
      * @memberof DraftModel
      */
     public async startDraft(user: UserData) {
-        let collection = new Collection(await collectionModel.getCollection(user.uid));
-        if (collection.getGold() < Draft.cost)
-            return 'Not Enough Gold';
-        if ((await this.getDraft(user)) !== false)
-            return 'Already in draft';
+        let collection = new Collection(
+            await collectionModel.getCollection(user.uid)
+        );
+        if (collection.getGold() < Draft.cost) return "Not Enough Gold";
+        if ((await this.getDraft(user)) !== false) return "Already in draft";
         collection.removeGold(Draft.cost);
         const draft = new Draft();
-        await db.query(`
-            INSERT INTO CCG.Draft (accountID, draftData) 
+        await db.query(
+            `
+            INSERT INTO CCG.Draft (accountID, draftData)
             VALUES ($1, $2);
-        `, [user.uid, draft]);
+        `,
+            [user.uid, draft]
+        );
         await collectionModel.saveCollection(collection.getSavable(), user.uid);
         return draft.toSavable();
     }
@@ -39,11 +40,14 @@ class DraftModel {
      * @memberof DraftModel
      */
     public updateDraft(user: UserData, draft: SavedDraft) {
-        return db.query(`
+        return db.query(
+            `
             UPDATE CCG.Draft
             SET draftData = $2
             WHERE accountID = $1;
-        `, [user.uid, draft]);
+        `,
+            [user.uid, draft]
+        );
     }
 
     /**
@@ -54,12 +58,14 @@ class DraftModel {
      * @memberof DraftModel
      */
     public async getDraft(user: UserData) {
-        const result = await db.query(`
+        const result = await db.query(
+            `
             SELECT draftData as "draftData" FROM CCG.Draft
             WHERE accountID = $1;
-        `, [user.uid]);
-        if (result.rowCount === 0)
-            return false;
+        `,
+            [user.uid]
+        );
+        if (result.rowCount === 0) return false;
         return result.rows[0].draftData as SavedDraft;
     }
 
@@ -67,13 +73,15 @@ class DraftModel {
         const draft = new Draft(data);
         let rewards = draft.getRewards();
         await collectionModel.rewardPlayer(user, rewards);
-        await db.query(`
+        await db.query(
+            `
             DELETE FROM CCG.Draft
             WHERE accountID = $1;
-        `, [user.uid]);
-        return rewards
+        `,
+            [user.uid]
+        );
+        return rewards;
     }
-
 }
 
 export const draftModel = new DraftModel();

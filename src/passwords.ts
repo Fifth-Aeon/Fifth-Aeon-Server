@@ -1,7 +1,7 @@
-import * as crypto from 'crypto';
-import * as jwt from 'jsonwebtoken';
-import { NextFunction, Request, Response } from 'express';
-import { config } from './config';
+import * as crypto from "crypto";
+import * as jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
+import { config } from "./config";
 
 interface PasswordHash {
     hash: string;
@@ -14,7 +14,7 @@ class PasswordGenerator {
     public authorize: (req: Request, res: Response, next: NextFunction) => void;
 
     constructor() {
-        this.secret = config.jwtSecret;
+        this.secret = config.jwtSecret || '';
         this.authorize = this.needsAuth.bind(this);
     }
 
@@ -33,11 +33,10 @@ class PasswordGenerator {
 
     private needsAuth(req: Request, res: Response, next: NextFunction) {
         try {
-            (req as any).user = jwt.verify(req.header('token'), this.secret);
+            (req as any).user = jwt.verify(req.header("token") || '', this.secret);
             next();
         } catch (e) {
-            res.status(401)
-                .send('Requires Authentication');
+            res.status(401).send("Requires Authentication");
         }
     }
 
@@ -48,36 +47,51 @@ class PasswordGenerator {
     }
 
     public genRandomString(length: number) {
-        return crypto.randomBytes(Math.ceil(length / 2))
-            .toString('hex')
+        return crypto
+            .randomBytes(Math.ceil(length / 2))
+            .toString("hex")
             .slice(0, length);
-    };
+    }
 
     public getHashedPassword = (password: string) => {
         const salt = this.genRandomString(32);
         return new Promise<PasswordHash>((fulfill, reject) => {
-            crypto.pbkdf2(password, salt, 100000, 128, 'sha512', (err, derivedKey) => {
-                if (err) {
-                    reject(err);
-                    return;
+            crypto.pbkdf2(
+                password,
+                salt,
+                100000,
+                128,
+                "sha512",
+                (err, derivedKey) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    fulfill({
+                        hash: derivedKey.toString("base64"),
+                        salt: salt
+                    });
                 }
-                fulfill({
-                    hash: derivedKey.toString('base64'),
-                    salt: salt
-                });
-            });
+            );
         });
     };
 
     public checkPassword = (candidate: string, hash: string, salt: string) => {
         return new Promise((fulfill, reject) => {
-            crypto.pbkdf2(candidate, salt, 100000, 128, 'sha512', (err, derivedKey) => {
-                if (err) {
-                    reject(err);
-                    return;
+            crypto.pbkdf2(
+                candidate,
+                salt,
+                100000,
+                128,
+                "sha512",
+                (err, derivedKey) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    fulfill(derivedKey.toString("base64") === hash);
                 }
-                fulfill(derivedKey.toString('base64') === hash);
-            });
+            );
         });
     };
 }

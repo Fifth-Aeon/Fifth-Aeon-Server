@@ -1,13 +1,12 @@
-import { Card } from './game_model/card';
-
-import { ServerMessenger } from './messenger'
-import { ErrorType } from './errors'
-import { Message, MessageType } from './message';
-import { ServerGame } from './game_model/serverGame';
-import { standardFormat } from './game_model/gameFormat';
-import { Server } from './server';
 import { Account } from './account';
-import { GameAction, GameActionType } from 'game_model/events/gameAction';
+import { ErrorType } from './errors';
+import { GameAction, GameActionType } from './game_model/events/gameAction';
+import { standardFormat } from './game_model/gameFormat';
+import { ServerGame } from './game_model/serverGame';
+import { Message, MessageType } from './message';
+import { ServerMessenger } from './messenger';
+import { Server } from './server';
+
 
 export class GameServer {
     private playerAccounts: Account[] = [];
@@ -34,7 +33,7 @@ export class GameServer {
             return;
         }
         let events = this.game.handleAction(action);
-        if (events == null) {
+        if (events === null) {
             this.server.getErrorHandler().clientError(msg.source, ErrorType.GameActionError,
                 'Cannot take action ' + GameActionType[action.type])
             return;
