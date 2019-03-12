@@ -8,7 +8,7 @@ ALTER TABLE CCG.Account ALTER COLUMN email DROP NOT NULL;
 
 -- End Migrations for Guest Accounts ----------------------------------------------
 
--- Add Simple Draft Data 
+-- Add Simple Draft Data
 CREATE TABLE CCG.Draft (
     accountID INTEGER NOT NULL,
     draftData JSON NOT NULL,
@@ -18,3 +18,38 @@ CREATE TABLE CCG.Draft (
 -- Add last login time
 ALTER TABLE CCG.Account ADD COLUMN lastActive TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
 UPDATE CCG.Account SET lastActive = joined;
+
+-- Add tournament data
+CREATE TABLE CCG.AITournament (
+    id           SERIAL PRIMARY KEY,
+    name         VARCHAR(30),
+    active       BOOLEAN
+);
+
+CREATE TABLE CCG.TournamentTeam (
+    id           SERIAL PRIMARY KEY,
+    tournamentID INTEGER,
+    teamName     VARCHAR(30) NOT NULL CHECK(teamName SIMILAR TO '[a-zA-Z0-9]+( [a-zA-Z0-9]+)*'),
+    joinCode     TEXT NOT NULL DEFAULT md5(random()::text),
+    FOREIGN KEY (tournamentID) REFERENCES CCG.AITournament(id)
+);
+CREATE UNIQUE INDEX unique_team_name ON CCG.TournamentTeam (LOWER(teamName));
+
+CREATE TABLE CCG.TeamSubmission (
+    id           SERIAL PRIMARY KEY,
+    owningTeam   INTEGER NOT NULL,
+    submitted    TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
+    contents     BYTEA,
+    FOREIGN KEY (owningTeam) REFERENCES CCG.TournamentTeam(id)
+);
+
+CREATE TABLE CCG.TournamentParticipant (
+    accountID    INTEGER NOT NULL,
+    teamID       INTEGER,
+    tournamentID INTEGER NOT NULL,
+    isTeamOwner  BOOLEAN NOT NULL,
+    FOREIGN KEY (teamId) REFERENCES CCG.TournamentTeam(id),
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID),
+    FOREIGN KEY (tournamentID) REFERENCES CCG.AITournament(id),
+    PRIMARY KEY (accountID, tournamentID)
+);
