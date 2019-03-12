@@ -8,10 +8,50 @@ export interface TeamData {
     teamMates: {
         name: string;
         isLeader: boolean;
-    }[]
+    }[];
 }
 
 class TournamentModel {
+    // Submisions -------------------------------------------------------------------------------------
+    public async addSubmission(user: UserData, file: Express.Multer.File) {
+        await db.query(
+            `INSERT INTO CCG.TeamSubmission(owningTeam, submitter, contents)
+            VALUES($1, $2, $3)
+            returning id;`,
+            [await this.getTeam(user), user.uid, file.buffer]
+        );
+    }
+
+    public async getTeamSubmissionInfo(user: UserData) {
+        return (await db.query(
+            `SELECT
+                AC.username as "submitter",
+                TS.submitted,
+                TS.id as "submissionID"
+            FROM  CCG.TeamSubmission as TS, CCG.Account as AC
+            WHERE owningTeam = $1
+              AND AC.accountID = TS.submitter
+            ORDER BY TS.submitted DESC
+            LIMIT 5;`,
+            [await this.getTeam(user)]
+        )).rows;
+    }
+
+    public async getSubmissionData(user: UserData, submissionID: number) {
+        const query = await db.query(
+            `SELECT contents
+            FROM  CCG.TeamSubmission
+            WHERE owningTeam = $1
+              AND id = $2;`,
+            [await this.getTeam(user), submissionID]
+        );
+        if (query.rowCount === 0) {
+            return null;
+        }
+        return query.rows[0].contents as Buffer;
+    }
+
+
     // Team Leader Actions -----------------------------------------------------------------------------
     public async createTeam(user: UserData, teamName: string) {
         if (await this.isMemberOfTeam(user)) {
@@ -59,10 +99,8 @@ class TournamentModel {
     }
 
     public async getTeamInformation(user: UserData): Promise<TeamData> {
-        if (!await this.isMemberOfTeam(user)) {
-            throw new Error(
-                "Your not on a team"
-            );
+        if (!(await this.isMemberOfTeam(user))) {
+            throw new Error("Your not on a team");
         }
         const teamRole = (await db.query(
             `
@@ -111,7 +149,7 @@ class TournamentModel {
             teamName: teamData.teamName,
             joinCode: teamData.joinCode,
             teamMates: teamMembers.rows
-        }
+        };
     }
 
     /** Returns the team a user is leading (or error if none) */
@@ -122,6 +160,20 @@ class TournamentModel {
             WHERE accountID = $1
             AND   tournamentID = $2
             AND   isTeamOwner = true;`,
+            [user.uid, await this.getActiveTournament()]
+        );
+        if (teamId.rowCount < 1) {
+            throw new Error("You are not the leader of a team.");
+        }
+        return teamId.rows[0].teamID as number;
+    }
+
+    private async getTeam(user: UserData) {
+        const teamId = await db.query(
+            `
+            SELECT teamID as "teamID" FROM CCG.TournamentParticipant
+            WHERE accountID = $1
+            AND   tournamentID = $2`,
             [user.uid, await this.getActiveTournament()]
         );
         if (teamId.rowCount < 1) {
