@@ -40,16 +40,16 @@ CREATE TABLE CCG.TeamSubmission (
     owningTeam   INTEGER NOT NULL,
     submitted    TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
     contents     BYTEA,
-    FOREIGN KEY (owningTeam) REFERENCES CCG.TournamentTeam(id)
+    FOREIGN KEY (owningTeam) REFERENCES CCG.TournamentTeam(id) ON DELETE CASCADE
 );
 
 CREATE TABLE CCG.TournamentParticipant (
     accountID    INTEGER NOT NULL,
-    teamID       INTEGER,
+    teamID       INTEGER NOT NULL,
     tournamentID INTEGER NOT NULL,
     isTeamOwner  BOOLEAN NOT NULL,
-    FOREIGN KEY (teamId) REFERENCES CCG.TournamentTeam(id),
-    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID),
+    FOREIGN KEY (teamId) REFERENCES CCG.TournamentTeam(id) ON DELETE CASCADE,
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID) ON DELETE CASCADE,
     FOREIGN KEY (tournamentID) REFERENCES CCG.AITournament(id),
     PRIMARY KEY (accountID, tournamentID)
 );

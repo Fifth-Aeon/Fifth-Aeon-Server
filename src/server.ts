@@ -18,6 +18,7 @@ import { Message, MessageType } from "./message";
 import { ServerMessenger } from "./messenger";
 import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
+import { tournamentRouter } from './routes/tournament.routes';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -74,6 +75,7 @@ export class Server {
         this.app.use("/api/availability", avalibilityRoutes);
         this.app.use("/api/cards", cardRoutes);
         this.app.use("/api/drafts", draftRouter);
+        this.app.use("/api/tournament", tournamentRouter);
         this.app.get("/report", (req, res) => {
             res.send(this.getReport());
         });
