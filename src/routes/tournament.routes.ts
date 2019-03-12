@@ -38,7 +38,6 @@ router.post(
 router.post(
     "/exitTeam",
     passwords.authorize,
-    validators.requiredAttributes(["joinCode"]),
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
@@ -53,7 +52,6 @@ router.post(
 router.post(
     "/dissolveTeam",
     passwords.authorize,
-    validators.requiredAttributes(["joinCode"]),
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
