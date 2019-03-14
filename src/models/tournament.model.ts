@@ -51,13 +51,12 @@ class TournamentModel {
         return query.rows[0].contents as Buffer;
     }
 
-
     // Team Leader Actions -----------------------------------------------------------------------------
     public async createTeam(user: UserData, teamName: string) {
         if (await this.isMemberOfTeam(user)) {
-            throw new Error(
-                "Cannot form a team, you are already already on a team"
-            );
+            return Promise.reject({
+                problem: "Cannot form a team, you are already already on a team"
+            });
         }
 
         const tournamentId = await this.getActiveTournament();
@@ -100,7 +99,9 @@ class TournamentModel {
 
     public async getTeamInformation(user: UserData): Promise<TeamData> {
         if (!(await this.isMemberOfTeam(user))) {
-            throw new Error("Your not on a team");
+            return Promise.reject({
+                problem: "Your not on a team"
+            });
         }
         const teamRole = (await db.query(
             `
@@ -163,7 +164,9 @@ class TournamentModel {
             [user.uid, await this.getActiveTournament()]
         );
         if (teamId.rowCount < 1) {
-            throw new Error("You are not the leader of a team.");
+            return Promise.reject({
+                problem: "You are not the leader of a team."
+            });
         }
         return teamId.rows[0].teamID as number;
     }
@@ -177,7 +180,9 @@ class TournamentModel {
             [user.uid, await this.getActiveTournament()]
         );
         if (teamId.rowCount < 1) {
-            throw new Error("You are not the leader of a team.");
+            return Promise.reject({
+                problem: "You are not the leader of a team."
+            });
         }
         return teamId.rows[0].teamID as number;
     }
@@ -185,9 +190,9 @@ class TournamentModel {
     // Team Member Actions -----------------------------------------------------------------------------
     public async joinTeam(user: UserData, code: string) {
         if (await this.isMemberOfTeam(user)) {
-            throw new Error(
-                "Cannot join team,  you are already already on a team"
-            );
+            return Promise.reject({
+                problem: "Cannot join team,  you are already already on a team"
+            });
         }
 
         const teamExists = await db.query(
@@ -198,7 +203,9 @@ class TournamentModel {
         );
 
         if (teamExists.rowCount === 0) {
-            throw new Error("No team exists with that join code.");
+            return Promise.reject({
+                problem: "No team exists with that join code."
+            });
         }
 
         await db.query(
@@ -212,7 +219,9 @@ class TournamentModel {
 
     public async exitTeam(user: UserData) {
         if (!(await this.isMemberOfTeam(user))) {
-            throw new Error("Cannot leave team your not in one");
+            return Promise.reject({
+                problem: "Cannot leave team your not in one"
+            });
         }
 
         const tournamentId = await this.getActiveTournament();
@@ -232,9 +241,13 @@ class TournamentModel {
             WHERE active = true;
         `);
         if (result.rowCount === 0) {
-            throw new Error("No Active tournament");
+            return Promise.reject({
+                problem: "No Active tournament"
+            });
         } else if (result.rowCount > 1) {
-            throw new Error("Multiple Active tournaments");
+            return Promise.reject({
+                problem: "Multiple Active tournaments"
+            });
         }
         return result.rows[0].id;
     }

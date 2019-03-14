@@ -18,7 +18,7 @@ import { Message, MessageType } from "./message";
 import { ServerMessenger } from "./messenger";
 import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
-import { tournamentRouter } from './routes/tournament.routes';
+import { tournamentRouter } from "./routes/tournament.routes";
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -88,10 +88,16 @@ export class Server {
         res: express.Response,
         next: NextFunction
     ) {
-        console.error(err);
-        res.status(500).json({
-            message: err.message || err.name
-        });
+        if ((err as any).problem) {
+            res.status(400).json({
+                message: (err as any).problem
+            });
+        } else {
+            console.error(err);
+            res.status(500).json({
+                message: err.message || err.name
+            });
+        }
     }
 
     private pruneAccount(acc: Account) {
