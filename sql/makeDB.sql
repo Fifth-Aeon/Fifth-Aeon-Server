@@ -9,7 +9,7 @@ CREATE TABLE CCG.Account (
     emailVerified       BOOLEAN DEFAULT false NOT NULL,
     banned              BOOLEAN DEFAULT false NOT NULL,
     joined              DATE DEFAULT CURRENT_DATE NOT NULL,
-    lastActive          TIMESTAMP DEFAULT CURRENT_DATE NOT NULL,
+    lastActive          TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     skillLevel          SMALLINT DEFAULT 800,
     collection          JSON,
     password            VARCHAR(256) NOT NULL CHECK (LENGTH(password) >= 8),
@@ -47,9 +47,14 @@ CREATE TABLE CCG.TournamentTeam (
     tournamentID INTEGER,
     teamName     VARCHAR(30) NOT NULL CHECK(teamName SIMILAR TO '[a-zA-Z0-9]+( [a-zA-Z0-9]+)*'),
     joinCode     TEXT NOT NULL DEFAULT md5(random()::text),
+    contactEmail VARCHAR(254) NOT NULL CHECK(LENGTH(contactEmail) > 0),
+    contactName  VARCHAR(60) NOT NULL CHECK(LENGTH(teamName) > 0),
+    contactOrg   VARCHAR(60) NOT NULL CHECK(LENGTH(contactOrg) > 0),
     FOREIGN KEY (tournamentID) REFERENCES CCG.AITournament(id)
 );
 CREATE UNIQUE INDEX unique_team_name ON CCG.TournamentTeam (LOWER(teamName));
+CREATE UNIQUE INDEX unique_contact_email ON CCG.TournamentTeam (LOWER(contactEmail));
+
 
 CREATE TABLE CCG.TeamSubmission (
     id           SERIAL PRIMARY KEY,

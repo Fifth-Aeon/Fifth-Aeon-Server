@@ -52,7 +52,7 @@ class TournamentModel {
     }
 
     // Team Leader Actions -----------------------------------------------------------------------------
-    public async createTeam(user: UserData, teamName: string) {
+    public async createTeam(user: UserData, teamName: string, contactName: string, contactEmail:string, contactOrg:string) {
         if (await this.isMemberOfTeam(user)) {
             return Promise.reject({
                 problem: "Cannot form a team, you are already already on a team"
@@ -61,10 +61,10 @@ class TournamentModel {
 
         const tournamentId = await this.getActiveTournament();
         const newTeam = await db.query(
-            `INSERT INTO CCG.TournamentTeam(tournamentID, teamName)
-            VALUES($1, $2)
+            `INSERT INTO CCG.TournamentTeam(tournamentID, teamName, contactName, contactEmail, contactOrg)
+            VALUES($1, $2, $3, $4, $5)
             returning id;`,
-            [tournamentId, teamName]
+            [tournamentId, teamName, contactName, contactEmail, contactOrg]
         );
 
         await db.query(

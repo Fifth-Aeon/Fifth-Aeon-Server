@@ -17,11 +17,24 @@ const fileUploader = multer({
 router.post(
     "/createTeam",
     passwords.authorize,
-    validators.requiredAttributes(["teamName"]),
+    validators.requiredAttributes([
+        "teamName",
+        "contactEmail",
+        "contactName",
+        "contactOrg"
+    ]),
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
-            res.json(await tournamentModel.createTeam(user, req.body.teamName));
+            res.json(
+                await tournamentModel.createTeam(
+                    user,
+                    req.body.teamName,
+                    req.body.contactEmail,
+                    req.body.contactName,
+                    req.body.contactOrg
+                )
+            );
         } catch (e) {
             next(e);
         }
@@ -98,7 +111,10 @@ router.get("/submissions", passwords.authorize, async (req, res, next) => {
 router.get("/submission/:id", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        const data = await tournamentModel.getSubmissionData(user, req.params.id);
+        const data = await tournamentModel.getSubmissionData(
+            user,
+            req.params.id
+        );
         if (data === null) {
             res.send({ message: "No such submission." });
             return;
