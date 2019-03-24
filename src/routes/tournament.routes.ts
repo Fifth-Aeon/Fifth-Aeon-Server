@@ -130,19 +130,53 @@ router.get("/submission/:id", passwords.authorize, async (req, res, next) => {
     }
 });
 
-router.get("/contestantInfo", passwords.authorizeAtLevel('admin'), async (req, res, next) => {
-    try {
-        res.json(await tournamentModel.getContestants());
-    } catch (e) {
-        next(e);
+router.get(
+    "/contestantInfo",
+    passwords.authorizeAtLevel("admin"),
+    async (req, res, next) => {
+        try {
+            res.json(await tournamentModel.getContestants());
+        } catch (e) {
+            next(e);
+        }
     }
-});
+);
 
-router.get("/getTeams", passwords.authorizeAtLevel('admin'), async (req, res, next) => {
-    try {
-        res.json(await tournamentModel.getTeamInfo());
-    } catch (e) {
-        next(e);
+router.get(
+    "/getTeams",
+    passwords.authorizeAtLevel("admin"),
+    async (req, res, next) => {
+        try {
+            res.json(await tournamentModel.getTeamInfo());
+        } catch (e) {
+            next(e);
+        }
     }
-});
+);
+
+router.get(
+    "/latestSubmission/:teamId",
+    passwords.authorizeAtLevel("admin"),
+    async (req, res, next) => {
+        try {
+            const data = await tournamentModel.getLatestSubmissionData(
+                req.params.teamId
+            );
+            if (data === null) {
+                res.send({ message: "No such submission." });
+                return;
+            }
+            res.writeHead(200, {
+                "Content-Type": "application/zip",
+                "Content-disposition":
+                    "attachment;filename=" + "submission.zip",
+                "Content-Length": data.length
+            });
+            res.end(data);
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
 export const tournamentRouter = router;

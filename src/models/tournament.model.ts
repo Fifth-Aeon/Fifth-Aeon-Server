@@ -51,6 +51,21 @@ class TournamentModel {
         return query.rows[0].contents as Buffer;
     }
 
+    public async getLatestSubmissionData(teamId: number) {
+        const query = await db.query(
+            `SELECT contents
+            FROM  CCG.TeamSubmission
+            WHERE owningTeam = $1
+            ORDER BY submitted DESC
+            LIMIT 1;`,
+            [teamId]
+        );
+        if (query.rowCount === 0) {
+            return null;
+        }
+        return query.rows[0].contents as Buffer;
+    }
+
     // Team Leader Actions -----------------------------------------------------------------------------
     public async createTeam(user: UserData, teamName: string, contactName: string, contactEmail:string, contactOrg:string) {
         if (await this.isMemberOfTeam(user)) {
@@ -283,11 +298,10 @@ class TournamentModel {
     }
 
     public async getTeamInfo(): Promise<any[]> {
-
-
         return (await db.query(
             `
             SELECT CCG.TournamentTeam.teamName as "teamName",
+                   CCG.TournamentTeam.id as "id",
                    (SELECT submitted FROM CCG.TeamSubmission
                     WHERE CCG.TeamSubmission.owningTeam = CCG.TournamentTeam.id
                       ORDER BY submitted DESC
@@ -302,8 +316,6 @@ class TournamentModel {
                     ) as members
             FROM CCG.TournamentTeam;
         `)).rows;
-
-
     }
 }
 
