@@ -2,6 +2,8 @@ import * as crypto from "crypto";
 import * as jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 import { config } from "./config";
+import { db } from "./db";
+import { UserData } from "./models/authentication.model";
 
 interface PasswordHash {
     hash: string;
@@ -14,8 +16,31 @@ class PasswordGenerator {
     public authorize: (req: Request, res: Response, next: NextFunction) => void;
 
     constructor() {
-        this.secret = config.jwtSecret || '';
+        this.secret = config.jwtSecret || "";
         this.authorize = this.needsAuth.bind(this);
+    }
+
+    public authorizeAtLevel(level: string) {
+        return async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const userData = jwt.verify(
+                    req.header("token") || "",
+                    this.secret
+                ) as UserData;
+                (req as any).user = userData;
+                const query = await db.query(
+                    `SELECT (role >= $1) as authorized FROM CCG.Account WHERE accountID = $2;`,
+                    [level, userData.uid]
+                );
+                if (query.rowCount > 0 && query.rows[0].authorized) {
+                    next();
+                } else {
+                    res.status(403).send("Requires higher user role");
+                }
+            } catch (e) {
+                res.status(401).send("Requires Authentication");
+            }
+        };
     }
 
     public createUserToken(accountID: number) {
@@ -33,7 +58,10 @@ class PasswordGenerator {
 
     private needsAuth(req: Request, res: Response, next: NextFunction) {
         try {
-            (req as any).user = jwt.verify(req.header("token") || '', this.secret);
+            (req as any).user = jwt.verify(
+                req.header("token") || "",
+                this.secret
+            );
             next();
         } catch (e) {
             res.status(401).send("Requires Authentication");

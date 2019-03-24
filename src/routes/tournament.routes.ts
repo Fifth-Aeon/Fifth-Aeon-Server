@@ -130,4 +130,19 @@ router.get("/submission/:id", passwords.authorize, async (req, res, next) => {
     }
 });
 
+router.get("/contestantInfo", passwords.authorizeAtLevel('admin'), async (req, res, next) => {
+    try {
+        res.json(await tournamentModel.getContestants());
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.get("/getTeams", passwords.authorizeAtLevel('admin'), async (req, res, next) => {
+    try {
+        res.json(await tournamentModel.getTeamInfo());
+    } catch (e) {
+        next(e);
+    }
+});
 export const tournamentRouter = router;

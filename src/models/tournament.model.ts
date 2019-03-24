@@ -263,6 +263,48 @@ class TournamentModel {
         );
         return result.rowCount > 0;
     }
+    // Admin --------------------------------------------------------
+
+    public async getContestants(): Promise<any[]> {
+        `SELECT TP.isTeamOwner as "isTeamOwner", TM.teamName as "teamName", AC.username
+        FROM CCG.TournamentParticipant as TP, CCG.TournamentTeam as TM, CCG.Account as AC
+        WHERE TP.teamID = TP.teamID
+        AND   TP.accountID = AC.accountID;`
+
+        return (await db.query(
+            `
+            SELECT TP.isTeamOwner as "isTeamOwner", TM.teamName as "teamName", AC.username
+            FROM CCG.TournamentParticipant as TP, CCG.TournamentTeam as TM, CCG.Account as AC
+            WHERE TP.teamID = TM.id
+            AND   TP.accountID = AC.accountID;
+        `)).rows;
+
+
+    }
+
+    public async getTeamInfo(): Promise<any[]> {
+
+
+        return (await db.query(
+            `
+            SELECT CCG.TournamentTeam.teamName as "teamName",
+                   (SELECT submitted FROM CCG.TeamSubmission
+                    WHERE CCG.TeamSubmission.owningTeam = CCG.TournamentTeam.id
+                      ORDER BY submitted DESC
+                      LIMIT 1) as "lastSubmission",
+                    (SELECT COUNT(submitted) FROM CCG.TeamSubmission
+                        WHERE CCG.TeamSubmission.owningTeam = CCG.TournamentTeam.id) as "numberOfSubmissions",
+                   array(
+                        SELECT AC.username
+                        FROM CCG.TournamentParticipant as TP, CCG.Account as AC
+                        WHERE TP.teamID = CCG.TournamentTeam.id
+                          AND TP.accountID = AC.accountID
+                    ) as members
+            FROM CCG.TournamentTeam;
+        `)).rows;
+
+
+    }
 }
 
 export const tournamentModel = new TournamentModel();
