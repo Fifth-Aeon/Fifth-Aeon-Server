@@ -10,7 +10,7 @@ const scripts = () => {
     return tsResult.js.pipe(gulp.dest("dist"));
 };
 
-const watch = () => {
+const watchSrc = () => {
     gulp.watch("src/**/*.ts", scripts);
 };
 
@@ -18,9 +18,9 @@ const assets = () => {
     return gulp.src(JSON_FILES).pipe(gulp.dest("dist"));
 };
 
-const defaultTasks = gulp.series(watch, assets);
+const defaultTasks = gulp.series(watchSrc, assets);
 
 exports.scripts = scripts;
-exports.watchSrc = watch;
+exports.watch = watchSrc;
 exports.assets = assets;
 exports.default = defaultTasks;
