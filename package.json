@@ -35,7 +35,8 @@
     "@types/ws": "5.1.2",
     "chai": "^4.2.0",
     "chai-http": "^4.2.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "tslint": "^5.18.0"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",

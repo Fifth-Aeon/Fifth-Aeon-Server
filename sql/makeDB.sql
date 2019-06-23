@@ -35,6 +35,30 @@ CREATE TABLE CCG.Draft (
     FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
 );
 
+-- Mod Definitions
+CREATE TABLE CCG.Card (
+    id          UUID PRIMARY KEY,
+    ownerID     INTEGER NOT NULL,
+    cardData    JSON,
+    FOREIGN KEY (ownerID) REFERENCES CCG.Account(accountID) ON DELETE CASCADE
+);
+
+CREATE TABLE CCG.Set (
+    id             UUID PRIMARY KEY,
+    setName        VARCHAR(256) NOT NULL,
+    setDescription VARCHAR(1048576),
+    ownerID        INTEGER NOT NULL,
+    public         BOOLEAN NOT NULL DEFAULT false,
+    official       BOOLEAN NOT NULL DEFAULT false,
+    FOREIGN KEY (ownerID) REFERENCES CCG.Account(accountID) ON DELETE CASCADE
+);
+
+CREATE TABLE CCG.SetMembership (
+    setID       UUID REFERENCES CCG.Set(id) ON DELETE CASCADE,
+    cardID      UUID REFERENCES CCG.Card(id) ON DELETE CASCADE,
+    PRIMARY KEY (setID, cardID)
+)
+
 -- A.I Tournament definitons
 CREATE TABLE CCG.AITournament (
     id           SERIAL PRIMARY KEY,

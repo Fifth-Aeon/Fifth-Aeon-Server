@@ -5,7 +5,7 @@ import { NextFunction } from "express-serve-static-core";
 import * as morgan from "morgan";
 import * as os from "os";
 import { authRoutes } from "./routes/authenticaiton.routes";
-import { avalibilityRoutes } from "./routes/avalibility.routes";
+import { availabilityRoutes } from "./routes/avalibility.routes";
 import { cardRoutes } from "./routes/collection.routes";
 import { draftRouter } from "./routes/draft.routes";
 import { Account } from "./account";
@@ -19,6 +19,8 @@ import { ServerMessenger } from "./messenger";
 import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
 import { tournamentRouter } from "./routes/tournament.routes";
+import { moddingModel } from 'models/mods.model';
+import { moddingRouter } from 'routes/mods.routes';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -72,9 +74,10 @@ export class Server {
         this.app.use(cors());
         this.app.use(morgan("dev"));
         this.app.use("/api/auth", authRoutes);
-        this.app.use("/api/availability", avalibilityRoutes);
+        this.app.use("/api/availability", availabilityRoutes);
         this.app.use("/api/cards", cardRoutes);
         this.app.use("/api/drafts", draftRouter);
+        this.app.use("/api/modding", moddingRouter);
         this.app.use("/api/tournament", tournamentRouter);
         this.app.get("/report", (req, res) => {
             res.send(this.getReport());

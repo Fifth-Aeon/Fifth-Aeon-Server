@@ -5,15 +5,15 @@ import { NextFunction, Request, Response } from "express";
 
 /**
  * Checks if a certain table has a row with the given attribute.
- * This is useful so the client can immediatly provide feedback on
- * whether a certain unique key is avalible.
+ * This is useful so the client can immediately provide feedback on
+ * whether a certain unique key is available.
  *
  * @param {string} table The table whose attribute we are checking
  * @param {string} attribute The key of the table
- * @param {boolean} caseInsensitive Whether the search should ignore capitiization
+ * @param {boolean} caseInsensitive Whether the search should ignore capitalization
  * @returns {function(Request, Response, NextFunction): void} Route handler that checks the attribute
  */
-const checkAvalibility = (
+const checkAvailability = (
     table: string,
     attribute: string,
     caseInsensitive: boolean
@@ -57,10 +57,10 @@ router.get(
     }
 );
 
-router.get("/email/:email", checkAvalibility("Account", "email", true));
+router.get("/email/:email", checkAvailability("Account", "email", true));
 router.get(
     "/username/:username",
-    checkAvalibility("Account", "username", true)
+    checkAvailability("Account", "username", true)
 );
 
-export const avalibilityRoutes = router;
+export const availabilityRoutes = router;
