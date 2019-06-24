@@ -19,8 +19,7 @@ import { ServerMessenger } from "./messenger";
 import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
 import { tournamentRouter } from "./routes/tournament.routes";
-import { moddingModel } from 'models/mods.model';
-import { moddingRouter } from 'routes/mods.routes';
+import { moddingRouter } from "./routes/mods.routes";
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;

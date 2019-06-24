@@ -9,15 +9,16 @@ router.post("/startDraft", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
         const result = await draftModel.startDraft(user);
-        if (typeof result !== "string")
+        if (typeof result !== "string") {
             res.json({
                 message: "Draft started",
                 data: result
             });
-        else
+        } else {
             res.status(400).json({
                 message: "Cannot start draft: " + result
             });
+        }
     } catch (e) {
         next(e);
     }

@@ -11,17 +11,21 @@ class ModdingModel {
         return db.query(
             `INSERT INTO CCG.Card(id, ownerID, cardData)
             VALUES($1, $2, $3)
-            ON CONFLICT DO UPDATE 
-            SET cardData = $3
-            WHERE id = $1;`,
+            ON CONFLICT ON CONSTRAINT card_pkey
+            DO UPDATE
+                SET cardData = $3
+                WHERE Card.id = $1;`,
             [data.id, user.uid, data]
         );
     }
 
     public async getUserCards(user: UserData): Promise<CardData[]> {
         return (await db.query(
-            `SELECT (cardData as "cardData") FROM CCG.Card
-            WHERE ownerID = $1;`, [user.uid]
+            `SELECT
+            cardData AS "cardData"
+            FROM CCG.Card
+            WHERE ownerID = $1;`,
+            [user.uid]
         )).rows.map(result => result.cardData as CardData);
     }
 

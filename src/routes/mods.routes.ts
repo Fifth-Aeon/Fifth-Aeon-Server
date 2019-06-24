@@ -3,7 +3,7 @@ import * as express from "express";
 import { UserData } from "../models/authentication.model";
 import { passwords } from "../passwords";
 import { validators } from "./validators";
-import { moddingModel } from "models/mods.model";
+import { moddingModel } from "../models/mods.model";
 
 const router = express.Router();
 
@@ -43,10 +43,7 @@ router.post(
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
-            const result = await moddingModel.createSet(
-                user,
-                req.body.setInfo
-            );
+            const result = await moddingModel.createSet(user, req.body.setInfo);
             res.status(result ? 200 : 400).json();
         } catch (e) {
             next(e);
