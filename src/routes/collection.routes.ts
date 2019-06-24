@@ -11,16 +11,17 @@ router.get("/checkDaily", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
         const result = await collectionModel.checkDailyRewards(user);
-        if (typeof result !== "number")
+        if (typeof result !== "number") {
             res.status(200).json({
                 daily: true,
                 cards: result
             });
-        else
+        } else {
             res.status(200).json({
                 daily: false,
                 nextRewardTime: result
             });
+        }
     } catch (e) {
         next(e);
     }
@@ -29,10 +30,10 @@ router.get("/checkDaily", passwords.authorize, async (req, res, next) => {
 router.post("/reward", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        let collection = new Collection(
+        const collection = new Collection(
             await collectionModel.getCollection(user.uid)
         );
-        let reward = collection.addWinReward(req.body.won);
+        const reward = collection.addWinReward(req.body.won);
         await collectionModel.saveCollection(collection.getSavable(), user.uid);
         res.json(reward);
     } catch (e) {
@@ -43,14 +44,14 @@ router.post("/reward", passwords.authorize, async (req, res, next) => {
 router.post("/openPack", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        let collection = new Collection(
+        const collection = new Collection(
             await collectionModel.getCollection(user.uid)
         );
         if (!collection.canOpenBooster()) {
             res.status(400).json({ message: "No packs to open." });
             return;
         }
-        let packContents = collection.openBooster();
+        const packContents = collection.openBooster();
         await collectionModel.saveCollection(collection.getSavable(), user.uid);
         res.json(packContents);
     } catch (e) {
@@ -61,7 +62,7 @@ router.post("/openPack", passwords.authorize, async (req, res, next) => {
 router.post("/buy", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        let collection = new Collection(
+        const collection = new Collection(
             await collectionModel.getCollection(user.uid)
         );
         if (!collection.canBuyPack()) {

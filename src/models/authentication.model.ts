@@ -15,9 +15,11 @@ export class AuthenticationModel {
 
     private getAuthenticationResponse(accountID: number, username: string) {
         if (!this.server) {
-            throw new Error('Authentication model is not connected to a server instance.');
+            throw new Error(
+                "Authentication model is not connected to a server instance."
+            );
         }
-        let mpAccount = this.server.createMultiplayerUser(username);
+        const mpAccount = this.server.createMultiplayerUser(username);
         return {
             token: passwords.createUserToken(accountID),
             mpToken: mpAccount.token,
@@ -25,8 +27,8 @@ export class AuthenticationModel {
         };
     }
 
-    public async getUserdata(accountID: number) {
-        let data = (await db.query(
+    public async getUserData(accountID: number) {
+        const data = (await db.query(
             `
             SELECT accountID as "accountID", username
             FROM CCG.Account
@@ -58,7 +60,8 @@ export class AuthenticationModel {
                 passwordData.salt
             ]
         );
-        let result: { accountID: number; email: string } = queryResult.rows[0];
+        const result: { accountID: number; email: string } =
+            queryResult.rows[0];
         email.sendVerificationEmail(
             result.email,
             data.username,
@@ -83,9 +86,9 @@ export class AuthenticationModel {
             RETURNING accountID as "accountID", email;`,
             [username, "guest", passwordData.hash, passwordData.salt]
         );
-        let result = queryResult.rows[0];
+        const result = queryResult.rows[0];
         await collectionModel.addCollection(result.accountID, true);
-        let authResp = this.getAuthenticationResponse(
+        const authResp = this.getAuthenticationResponse(
             result.accountID,
             username
         );
@@ -121,8 +124,11 @@ export class AuthenticationModel {
                 passwordData.salt
             ]
         );
-        if (queryResult.rowCount === 0) return false;
-        let result: { accountID: number; email: string } = queryResult.rows[0];
+        if (queryResult.rowCount === 0) {
+            return false;
+        }
+        const result: { accountID: number; email: string } =
+            queryResult.rows[0];
         collectionModel.rewardPlayer(user, { packs: 2, gold: 0 });
         email.sendVerificationEmail(
             result.email,
@@ -141,14 +147,18 @@ export class AuthenticationModel {
                OR email    = $1; `,
             [usernameOrPassword]
         );
-        if (queryResult.rowCount == 0) throw new Error("No such account");
+        if (queryResult.rowCount === 0) {
+            throw new Error("No such account");
+        }
         const targetUser = queryResult.rows[0];
         const passwordCorrect = await passwords.checkPassword(
             password,
             targetUser.password,
             targetUser.salt
         );
-        if (!passwordCorrect) throw new Error("Incorrect password");
+        if (!passwordCorrect) {
+            throw new Error("Incorrect password");
+        }
         return this.getAuthenticationResponse(
             targetUser.accountID,
             targetUser.username

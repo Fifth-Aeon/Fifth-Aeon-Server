@@ -8,10 +8,10 @@ import { NextFunction, Request, Response } from "express";
  * This is useful so the client can immediately provide feedback on
  * whether a certain unique key is available.
  *
- * @param {string} table The table whose attribute we are checking
- * @param {string} attribute The key of the table
- * @param {boolean} caseInsensitive Whether the search should ignore capitalization
- * @returns {function(Request, Response, NextFunction): void} Route handler that checks the attribute
+ * @param table The table whose attribute we are checking
+ * @param attribute The key of the table
+ * @param caseInsensitive Whether the search should ignore capitalization
+ * @returns Route handler that checks the attribute
  */
 const checkAvailability = (
     table: string,

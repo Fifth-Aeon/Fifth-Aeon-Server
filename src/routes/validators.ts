@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 
 function makeAttributeValidator(params: any) {
     return (req: Request, res: Response, next: NextFunction) => {
-        let missing = [];
-        let body = req.body;
-        for (let param of params) {
+        const missing = [];
+        const body = req.body;
+        for (const param of params) {
             if (body[param] === undefined) {
                 missing.push(param);
             }

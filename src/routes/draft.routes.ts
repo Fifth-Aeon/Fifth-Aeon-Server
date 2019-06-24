@@ -37,8 +37,10 @@ router.post("/updateDraft", passwords.authorize, async (req, res, next) => {
 router.get("/getDraft", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        let draftData = await draftModel.getDraft(user);
-        if (!draftData) return res.status(400).json({ message: "no data" });
+        const draftData = await draftModel.getDraft(user);
+        if (!draftData) {
+            return res.status(400).json({ message: "no data" });
+        }
         res.json({ message: "success", draftData: draftData });
     } catch (e) {
         next(e);

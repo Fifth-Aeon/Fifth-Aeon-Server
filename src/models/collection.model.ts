@@ -9,15 +9,15 @@ class CollectionModel {
     private static dailyRewardTime = 1000 * 60 * 60 * 24;
 
     async checkDailyRewards(user: UserData) {
-        let data = await db.query(
+        const data = await db.query(
             `
             SELECT lastActive as "lastActive"
             FROM CCG.Account
             WHERE accountID = $1;`,
             [user.uid]
         );
-        let lastActive = data.rows[0].lastActive as Date;
-        let elapsed = Date.now() - lastActive.getTime();
+        const lastActive = data.rows[0].lastActive as Date;
+        const elapsed = Date.now() - lastActive.getTime();
         if (elapsed > CollectionModel.dailyRewardTime) {
             db.query(
                 `
@@ -27,23 +27,23 @@ class CollectionModel {
             `,
                 [user.uid]
             );
-            let cardsAwareded = await this.rewardPlayer(user, {
+            const cardsAwarded = await this.rewardPlayer(user, {
                 gold: 0,
                 packs: 0,
                 cards: 1
             });
-            return cardsAwareded;
+            return cardsAwarded;
         }
         return CollectionModel.dailyRewardTime - elapsed;
     }
 
     async addCollection(ownerID: number, isGuest: boolean = false) {
-        let collection = new Collection();
-        let decks: DeckList[] = [];
-        let starters = getStarterDecks();
-        if (!isGuest) collection.addReward({ packs: 2, gold: 0 });
+        const collection = new Collection();
+        const decks: DeckList[] = [];
+        const starters = getStarterDecks();
+        if (!isGuest) { collection.addReward({ packs: 2, gold: 0 }); }
 
-        for (let deck of starters) {
+        for (const deck of starters) {
             decks.push(deck.clone());
             collection.addDeck(deck);
             await this.saveDeck(deck.getSavable(), ownerID);
@@ -52,14 +52,14 @@ class CollectionModel {
     }
 
     async rewardPlayer(user: UserData, reward: Rewards) {
-        let collection = new Collection(await this.getCollection(user.uid));
-        let awareded = collection.addReward(reward);
+        const collection = new Collection(await this.getCollection(user.uid));
+        const awarded = collection.addReward(reward);
         await this.saveCollection(collection.getSavable(), user.uid);
-        return awareded;
+        return awarded;
     }
 
     async getCollection(ownerID: number) {
-        let query = await db.query(
+        const query = await db.query(
             `
         SELECT collection
         FROM CCG.Account
@@ -70,7 +70,7 @@ class CollectionModel {
     }
 
     async saveCollection(collectionData: SavedCollection, ownerID: number) {
-        let collection = new Collection();
+        const collection = new Collection();
         collection.fromSavable(collectionData);
         return await db.query(
             `
@@ -88,9 +88,9 @@ class CollectionModel {
             [ownerID]
         );
         return query.rows.map(row => {
-            let deckdata = row.deckdata as SavedDeck;
-            deckdata.id = row.deckid;
-            return deckdata;
+            const deckData = row.deckdata as SavedDeck;
+            deckData.id = row.deckid;
+            return deckData;
         });
     }
 

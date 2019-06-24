@@ -1,6 +1,6 @@
 import { ServerMessenger } from "./messenger";
 import { Message, MessageType } from "./message";
-import { ErrorHandeler, ErrorType } from "./errors";
+import { ErrorHandler, ErrorType } from "./errors";
 import { Server } from "./server";
 import { getToken } from "./tokens";
 
@@ -10,23 +10,23 @@ export class MatchQueue {
 
     constructor(
         private server: Server,
-        private errors: ErrorHandeler,
+        private errors: ErrorHandler,
         private messenger: ServerMessenger,
         private startGame: (p1: string, p2: string) => void
     ) {
-        messenger.addHandeler(MessageType.JoinQueue, this.onJoinQueue, this);
-        messenger.addHandeler(MessageType.ExitQueue, this.onExitQueue, this);
-        messenger.addHandeler(
+        messenger.addHandler(MessageType.JoinQueue, this.onJoinQueue, this);
+        messenger.addHandler(MessageType.ExitQueue, this.onExitQueue, this);
+        messenger.addHandler(
             MessageType.NewPrivateGame,
             this.newPrivateGame,
             this
         );
-        messenger.addHandeler(
+        messenger.addHandler(
             MessageType.JoinPrivateGame,
             this.joinPrivateGame,
             this
         );
-        messenger.addHandeler(
+        messenger.addHandler(
             MessageType.CancelPrivateGame,
             this.cancelPrivateGame,
             this
@@ -42,7 +42,7 @@ export class MatchQueue {
             );
             return;
         }
-        let token = getToken(16);
+        const token = getToken(16);
         this.privateGames.set(token, message.source);
         this.messenger.sendMessageTo(
             MessageType.PrivateGameReady,
@@ -114,15 +114,15 @@ export class MatchQueue {
     }
 
     public removeFromQueue(token: string) {
-        if (this.playerQueue.has(token)) this.playerQueue.delete(token);
+        if (this.playerQueue.has(token)) { this.playerQueue.delete(token); }
     }
 
     private searchQueue(playerToken: string) {
         let found = false;
-        let other = undefined;
+        let other;
         this.playerQueue.forEach(otherToken => {
-            if (found) return;
-            if (otherToken == playerToken) return;
+            if (found) { return; }
+            if (otherToken === playerToken) { return; }
             other = otherToken;
             found = true;
         });
@@ -139,7 +139,7 @@ export class MatchQueue {
                 "Not logged in."
             );
         }
-        let playerToken: string = message.source;
+        const playerToken: string = message.source;
         if (this.playerQueue.has(playerToken)) {
             this.errors.clientError(
                 message.source,
@@ -158,7 +158,7 @@ export class MatchQueue {
     }
 
     private onExitQueue(message: Message) {
-        let playerToken: string = message.source;
+        const playerToken: string = message.source;
         this.removeFromQueue(playerToken);
     }
 }

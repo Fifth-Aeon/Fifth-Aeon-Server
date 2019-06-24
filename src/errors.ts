@@ -14,11 +14,11 @@ export interface ClientErrorData {
     type: ErrorType;
 }
 
-export class ErrorHandeler {
+export class ErrorHandler {
     constructor(private messenger: ServerMessenger) {}
 
     public clientError(client: string, type: ErrorType, message?: string) {
-        let msg = "Error of type: " + ErrorType[type] + " - " + message;
+        const msg = "Error of type: " + ErrorType[type] + " - " + message;
         this.messenger.sendMessageTo(
             MessageType.ClientError,
             {

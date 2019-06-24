@@ -11,14 +11,13 @@ interface PasswordHash {
 }
 
 class PasswordGenerator {
-    private secret: string;
-    private static expirationTime = 60 * 60 * 24 * 7; // 1 week
-    public authorize: (req: Request, res: Response, next: NextFunction) => void;
-
     constructor() {
         this.secret = config.jwtSecret || "";
         this.authorize = this.needsAuth.bind(this);
     }
+    private static expirationTime = 60 * 60 * 24 * 7; // 1 week
+    private secret: string;
+    public authorize: (req: Request, res: Response, next: NextFunction) => void;
 
     public authorizeAtLevel(level: string) {
         return async (req: Request, res: Response, next: NextFunction) => {
@@ -102,7 +101,7 @@ class PasswordGenerator {
                 }
             );
         });
-    };
+    }
 
     public checkPassword = (candidate: string, hash: string, salt: string) => {
         return new Promise((fulfill, reject) => {
@@ -121,7 +120,7 @@ class PasswordGenerator {
                 }
             );
         });
-    };
+    }
 }
 
 export const passwords = new PasswordGenerator();

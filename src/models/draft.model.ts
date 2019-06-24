@@ -6,18 +6,17 @@ import { Collection } from "../game_model/collection";
 
 class DraftModel {
     /**
-     * Creates a draft for a user if they already have enough gold and arn't already doing one.
+     * Creates a draft for a user if they already have enough gold and aren't already doing one.
      *
-     * @param {UserData} user - The user who will be drafting
+     * @param user - The user who will be drafting
      * @returns - true if successful otherwise false
-     * @memberof DraftModel
      */
     public async startDraft(user: UserData) {
-        let collection = new Collection(
+        const collection = new Collection(
             await collectionModel.getCollection(user.uid)
         );
-        if (collection.getGold() < Draft.cost) return "Not Enough Gold";
-        if ((await this.getDraft(user)) !== false) return "Already in draft";
+        if (collection.getGold() < Draft.cost) { return "Not Enough Gold"; }
+        if ((await this.getDraft(user)) !== false) { return "Already in draft"; }
         collection.removeGold(Draft.cost);
         const draft = new Draft();
         await db.query(
@@ -32,12 +31,9 @@ class DraftModel {
     }
 
     /**
-     * Updates a draft when the user has amde a choice
+     * Updates a draft when the user has made a choice
      *
-     * @param {UserData} user
-     * @param {SavedDraft} draft
      * @returns A promise that completes when the operation is done
-     * @memberof DraftModel
      */
     public updateDraft(user: UserData, draft: SavedDraft) {
         return db.query(
@@ -53,9 +49,7 @@ class DraftModel {
     /**
      * Gets a users current draft or false if they don't have one
      *
-     * @param {UserData} user
      * @returns - A draft object or false if the user isn't enrolled in a draft.
-     * @memberof DraftModel
      */
     public async getDraft(user: UserData) {
         const result = await db.query(
@@ -65,13 +59,13 @@ class DraftModel {
         `,
             [user.uid]
         );
-        if (result.rowCount === 0) return false;
+        if (result.rowCount === 0) { return false; }
         return result.rows[0].draftData as SavedDraft;
     }
 
     public async endDraft(user: UserData, data: SavedDraft) {
         const draft = new Draft(data);
-        let rewards = draft.getRewards();
+        const rewards = draft.getRewards();
         await collectionModel.rewardPlayer(user, rewards);
         await db.query(
             `

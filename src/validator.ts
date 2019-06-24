@@ -1,4 +1,4 @@
-import * as Ajv from 'ajv';
+import * as Ajv from "ajv";
 
 const pointSchema = {
     "type": "object",
@@ -14,7 +14,7 @@ const pointSchema = {
             "exclusiveMaximum": 100
         }
     }
-}
+};
 
 const placeShipSchema = {
     "type": "object",
@@ -31,23 +31,22 @@ const placeShipSchema = {
         },
         "loc": pointSchema
     }
-}
+};
 
 const fireParams = {
     "type": "object",
     "properties": {
         "target": pointSchema
     }
-}
+};
 
 /**
  * Validates data that comes from the client using JSON schema.
- * 
+ *
  * @export
- * @class Validator
  */
 export class Validator {
-    private ajv = new Ajv(); // options can be passed, e.g. {allErrors: true} 
+    private ajv = new Ajv(); // options can be passed, e.g. {allErrors: true}
     private shipParamsValidator: Ajv.ValidateFunction;
     private fireParamsValidator: Ajv.ValidateFunction;
 

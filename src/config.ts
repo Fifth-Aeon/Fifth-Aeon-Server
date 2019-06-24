@@ -2,7 +2,7 @@ let json: ServerConfig;
 try {
     json = require("../config.json");
 } catch (e) {
-    console.log("No JSON config file found. Using enviroment variables.");
+    console.log("No JSON config file found. Using environment variables.");
     json = {
         connectionString: null,
         jwtSecret: null,
@@ -22,7 +22,8 @@ export const config = {
     sendgridAPIKey: json.sendgridAPIKey || process.env.SENDGRID_API_KEY
 } as ServerConfig;
 
-if (config.jwtSecret === "TestSecret")
+if (config.jwtSecret === "TestSecret") {
     console.warn(
-        "No JWT_SECRET enviroment variable found. Using test secret. Do not use this in production."
+        "No JWT_SECRET environment variable found. Using test secret. Do not use this in production."
     );
+}

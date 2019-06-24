@@ -4,13 +4,13 @@ import * as express from "express";
 import { NextFunction } from "express-serve-static-core";
 import * as morgan from "morgan";
 import * as os from "os";
-import { authRoutes } from "./routes/authenticaiton.routes";
-import { availabilityRoutes } from "./routes/avalibility.routes";
+import { authRoutes } from "./routes/authentication.routes";
+import { availabilityRoutes } from "./routes/availability.routes";
 import { cardRoutes } from "./routes/collection.routes";
 import { draftRouter } from "./routes/draft.routes";
 import { Account } from "./account";
 import { startDB } from "./db";
-import { ErrorHandeler, ErrorType } from "./errors";
+import { ErrorHandler, ErrorType } from "./errors";
 import { GameServer } from "./gameServer";
 import { DeckList } from "./game_model/deckList";
 import { MatchQueue } from "./matchmaking";
@@ -28,7 +28,6 @@ const cleaningTime = 1000 * 60 * 60 * 60;
  * Server that holds references to all the components of the app
  *
  * @export
- * @class Server
  */
 export class Server {
     private gameQueue: MatchQueue;
@@ -36,18 +35,18 @@ export class Server {
     private games: Map<string, GameServer> = new Map<string, GameServer>();
     private accounts: Map<string, Account> = new Map<string, Account>();
     private app: express.Express;
-    private errors: ErrorHandeler;
+    private errors: ErrorHandler;
 
     constructor(port: number) {
         this.app = express();
         this.app.use(bodyParser.json());
         this.addRoutes();
-        let expressServer = this.app.listen(port, () => {
+        const expressServer = this.app.listen(port, () => {
             console.log("Server started on port", port);
         });
 
         this.messenger = new ServerMessenger(expressServer);
-        this.errors = new ErrorHandeler(this.messenger);
+        this.errors = new ErrorHandler(this.messenger);
         this.gameQueue = new MatchQueue(
             this,
             this.errors,
@@ -55,12 +54,14 @@ export class Server {
             this.makeGame.bind(this)
         );
 
-        this.messenger.addHandeler(MessageType.SetDeck, msg =>
+        this.messenger.addHandler(MessageType.SetDeck, msg =>
             this.setDeck(msg)
         );
         this.messenger.onMessage = (msg: Message) => {
-            let account = this.accounts.get(msg.source);
-            if (account) account.freshen();
+            const account = this.accounts.get(msg.source);
+            if (account) {
+                account.freshen();
+            }
         };
 
         this.passMessagesToGames();
@@ -108,16 +109,18 @@ export class Server {
         this.gameQueue.removeFromQueue(acc.token);
         this.messenger.deleteUser(acc.token);
         if (acc.gameId) {
-            let game = this.games.get(acc.gameId);
-            if (game) game.end();
+            const game = this.games.get(acc.gameId);
+            if (game) {
+                game.end();
+            }
         }
     }
 
     private pruneAccounts() {
-        console.log("Pruning acounts");
-        let now = Date.now();
-        for (let account of Array.from(this.accounts.values())) {
-            let time = now - account.lastUsed.getTime();
+        console.log("Pruning accounts");
+        const now = Date.now();
+        for (const account of Array.from(this.accounts.values())) {
+            const time = now - account.lastUsed.getTime();
             if (time > cleaningTime) {
                 this.pruneAccount(account);
             }
@@ -142,20 +145,20 @@ export class Server {
     }
 
     public createMultiplayerUser(username: string) {
-        let existing = Array.from(this.accounts.values()).find(
+        const existing = Array.from(this.accounts.values()).find(
             acc => acc.username === username
         );
         if (existing) {
             return existing;
         }
-        let token = getToken();
-        let account = new Account(token, username);
+        const token = getToken();
+        const account = new Account(token, username);
         this.accounts.set(account.token, account);
         return account;
     }
 
     private setDeck(msg: Message) {
-        let acc = this.accounts.get(msg.source);
+        const acc = this.accounts.get(msg.source);
         if (!acc) {
             this.errors.clientError(
                 msg.source,
@@ -165,7 +168,7 @@ export class Server {
             return;
         }
 
-        let deck = new DeckList();
+        const deck = new DeckList();
         try {
             acc.deck.fromJson(msg.data.deckList);
         } catch (e) {
@@ -179,8 +182,8 @@ export class Server {
     }
 
     private passMessagesToGames() {
-        this.messenger.addHandeler(MessageType.GameAction, (msg: Message) => {
-            let acc = this.accounts.get(msg.source);
+        this.messenger.addHandler(MessageType.GameAction, (msg: Message) => {
+            const acc = this.accounts.get(msg.source);
             if (!acc) {
                 this.errors.clientError(
                     msg.source,
@@ -189,7 +192,7 @@ export class Server {
                 );
                 return;
             }
-            let id = acc.getGame();
+            const id = acc.getGame();
 
             if (!id || !this.games.has(id)) {
                 this.errors.clientError(
@@ -204,21 +207,25 @@ export class Server {
     }
 
     public makeGame(token1: string, token2: string) {
-        let id = getToken();
-        let ac1 = this.accounts.get(token1);
-        let ac2 = this.accounts.get(token2);
-        if (!ac1 || !ac2) return;
+        const id = getToken();
+        const ac1 = this.accounts.get(token1);
+        const ac2 = this.accounts.get(token2);
+        if (!ac1 || !ac2) {
+            return;
+        }
         ac1.setInGame(id);
         ac2.setInGame(id);
-        let server = new GameServer(this.messenger, this, id, ac1, ac2);
+        const server = new GameServer(this.messenger, this, id, ac1, ac2);
         this.games.set(id, server);
         server.start();
     }
 
     public endGame(gameId: string) {
-        if (this.games.has(gameId)) this.games.delete(gameId);
-        else
-            console.error("Trying to delete non-existant game with id", gameId);
+        if (this.games.has(gameId)) {
+            this.games.delete(gameId);
+        } else {
+            console.error("Trying to delete non-existent game with id", gameId);
+        }
     }
 
     public getErrorHandler() {

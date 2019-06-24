@@ -12,7 +12,7 @@ export interface TeamData {
 }
 
 class TournamentModel {
-    // Submisions -------------------------------------------------------------------------------------
+    // Submissions -------------------------------------------------------------------------------------
     public async addSubmission(user: UserData, file: Express.Multer.File) {
         await db.query(
             `INSERT INTO CCG.TeamSubmission(owningTeam, submitter, contents)
@@ -67,7 +67,13 @@ class TournamentModel {
     }
 
     // Team Leader Actions -----------------------------------------------------------------------------
-    public async createTeam(user: UserData, teamName: string, contactName: string, contactEmail:string, contactOrg:string) {
+    public async createTeam(
+        user: UserData,
+        teamName: string,
+        contactName: string,
+        contactEmail: string,
+        contactOrg: string
+    ) {
         if (await this.isMemberOfTeam(user)) {
             return Promise.reject({
                 problem: "Cannot form a team, you are already already on a team"
@@ -281,20 +287,14 @@ class TournamentModel {
     // Admin --------------------------------------------------------
 
     public async getContestants(): Promise<any[]> {
-        `SELECT TP.isTeamOwner as "isTeamOwner", TM.teamName as "teamName", AC.username
-        FROM CCG.TournamentParticipant as TP, CCG.TournamentTeam as TM, CCG.Account as AC
-        WHERE TP.teamID = TP.teamID
-        AND   TP.accountID = AC.accountID;`
-
         return (await db.query(
             `
             SELECT TP.isTeamOwner as "isTeamOwner", TM.teamName as "teamName", AC.username
             FROM CCG.TournamentParticipant as TP, CCG.TournamentTeam as TM, CCG.Account as AC
             WHERE TP.teamID = TM.id
             AND   TP.accountID = AC.accountID;
-        `)).rows;
-
-
+        `
+        )).rows;
     }
 
     public async getTeamInfo(): Promise<any[]> {
@@ -315,7 +315,8 @@ class TournamentModel {
                           AND TP.accountID = AC.accountID
                     ) as members
             FROM CCG.TournamentTeam;
-        `)).rows;
+        `
+        )).rows;
     }
 }
 

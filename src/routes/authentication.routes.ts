@@ -69,7 +69,7 @@ router.post(
 router.get("/userdata", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
-        const result = await authenticationModel.getUserdata(user.uid);
+        const result = await authenticationModel.getUserData(user.uid);
         res.status(200).json(result);
     } catch (e) {
         next(e);
@@ -78,7 +78,7 @@ router.get("/userdata", passwords.authorize, async (req, res, next) => {
 
 router.post("/verifyEmail", passwords.authorize, async (req, res, next) => {
     try {
-        let user: UserData = (req as any).user;
+        const user: UserData = (req as any).user;
         if (user.email && user.uid) {
             const verificationResult = await db.query(
                 `
@@ -154,7 +154,7 @@ router.post(
                 });
                 return;
             }
-            let result = queryResult.rows[0];
+            const result = queryResult.rows[0];
             email.sendPasswordResetEmail(result.email, result.accountid);
             res.json({ message: "Reset email sent" });
         } catch (err) {

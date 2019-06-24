@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { config } from "./config";
 
 export const db = new Pool({
-    connectionString: config.connectionString || ''
+    connectionString: config.connectionString || ""
 });
 
 export async function startDB() {
@@ -16,7 +16,7 @@ export async function startDB() {
         if (!existQuery.rows[0].exists) {
             console.warn("No CCG Schema detected. Creating now.");
             fs.readFile("./sql/makeDB.sql", "utf8", function(err, sql) {
-                if (err) throw err;
+                if (err) { throw err; }
                 db.query(sql);
             });
         }
@@ -25,7 +25,7 @@ export async function startDB() {
             "Could not connect to postgres database. Please be sure the server is running."
         );
         console.error(
-            "You may also need to set the PGUSER and PGDATABASE enviroment variables to the correct values."
+            "You may also need to set the PGUSER and PGDATABASE environment variables to the correct values."
         );
         console.error("See https://node-postgres.com/features/connecting");
         throw e;
