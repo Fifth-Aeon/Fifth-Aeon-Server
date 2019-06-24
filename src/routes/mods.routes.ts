@@ -37,33 +37,13 @@ router.get("/getUserCards", passwords.authorize, async (req, res, next) => {
 
 // createSet
 router.post(
-    "/createSet",
+    "/insertOrUpdateSet",
     passwords.authorize,
     validators.requiredAttributes(["setInfo"]),
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
-            const result = await moddingModel.createSet(user, req.body.setInfo);
-            res.status(result ? 200 : 400).json();
-        } catch (e) {
-            next(e);
-        }
-    }
-);
-
-// modifySetPublicity
-router.post(
-    "/modifySetPublicity",
-    passwords.authorize,
-    validators.requiredAttributes(["setId", "isPublic"]),
-    async (req, res, next) => {
-        try {
-            const user: UserData = (req as any).user;
-            const result = await moddingModel.modifySetPublicity(
-                user,
-                req.body.setId,
-                req.body.isPublic
-            );
+            const result = await moddingModel.insertOrUpdateSet(user, req.body.setInfo, req.body.public || false);
             res.status(result ? 200 : 400).json();
         } catch (e) {
             next(e);

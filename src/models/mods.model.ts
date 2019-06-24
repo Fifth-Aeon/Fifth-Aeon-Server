@@ -29,26 +29,22 @@ class ModdingModel {
         )).rows.map(result => result.cardData as CardData);
     }
 
-    public createSet(user: UserData, set: SetInformation) {
-        return db.query(
-            `INSERT INTO CCG.Set(id, setName, setDescription, ownerID)
-            VALUES($1, $2, $3, $4);`,
-            [set.id, set.name, set.id, user.uid]
-        );
-    }
-
-    public async modifySetPublicity(
-        user: UserData,
-        setId: string,
-        isPublic: boolean
-    ) {
-        if (!(await this.canModifySet(user, setId))) {
+    public async insertOrUpdateSet(user: UserData, set: SetInformation, isPublic: boolean = false) {
+        if (!(await this.canModifySet(user, set.id))) {
             return false;
         }
-        return db.query(`UPDATE CCG.Set SET public = $1 WHERE id = $2;`, [
-            isPublic,
-            setId
-        ]);
+        return db.query(
+            `INSERT INTO CCG.Set(id, setName, setDescription, ownerID, public)
+            VALUES($1, $2, $3, $4, $5)
+            ON CONFLICT ON CONSTRAINT set_pkey
+            DO UPDATE
+                SET setName = $2
+                    setDescription = $3
+                    ownerID = $4
+                    public = $5
+                WHERE Set.id = $1;`,
+            [set.id, set.name, set.id, user.uid, isPublic]
+        );
     }
 
     public async getPublicSets(): Promise<SetInformation[]> {
