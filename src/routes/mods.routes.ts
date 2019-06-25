@@ -43,7 +43,7 @@ router.post(
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
-            const result = await moddingModel.insertOrUpdateSet(user, req.body.setInfo, req.body.public || false);
+            const result = await moddingModel.insertOrUpdateSet(user, req.body.setInfo);
             res.status(result ? 200 : 400).json();
         } catch (e) {
             next(e);
@@ -55,6 +55,16 @@ router.post(
 router.get("/publicSets", async (req, res, next) => {
     try {
         res.json(await moddingModel.getPublicSets());
+    } catch (e) {
+        next(e);
+    }
+});
+
+// getPublicSets
+router.get("/userSets", passwords.authorize, async (req, res, next) => {
+    try {
+        const user: UserData = (req as any).user;
+        res.json(await moddingModel.getUserSets(user));
     } catch (e) {
         next(e);
     }

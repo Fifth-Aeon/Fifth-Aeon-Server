@@ -29,7 +29,18 @@ class ModdingModel {
         )).rows.map(result => result.cardData as CardData);
     }
 
-    public async insertOrUpdateSet(user: UserData, set: SetInformation, isPublic: boolean = false) {
+    public async getUserSets(user: UserData): Promise<SetInformation[]> {
+        return (await db.query(
+            `SELECT id, setName as "name", setDescription as "description", public FROM CCG.Set
+            WHERE ownerID = $1;`,
+            [user.uid]
+        )).rows;
+    }
+
+    public async insertOrUpdateSet(
+        user: UserData,
+        set: SetInformation
+    ) {
         if (!(await this.canModifySet(user, set.id))) {
             return false;
         }
@@ -38,25 +49,25 @@ class ModdingModel {
             VALUES($1, $2, $3, $4, $5)
             ON CONFLICT ON CONSTRAINT set_pkey
             DO UPDATE
-                SET setName = $2
-                    setDescription = $3
-                    ownerID = $4
+                SET setName = $2,
+                    setDescription = $3,
+                    ownerID = $4,
                     public = $5
                 WHERE Set.id = $1;`,
-            [set.id, set.name, set.id, user.uid, isPublic]
+            [set.id, set.name, set.description, user.uid, set.public]
         );
     }
 
     public async getPublicSets(): Promise<SetInformation[]> {
         return (await db.query(
-            `SELECT (id, setName as "name", setDescription as "description") FROM CCG.Set
+            `SELECT id, setName as "name", setDescription as "description" FROM CCG.Set
             WHERE public = true;`
         )).rows;
     }
 
     public async getPublicSet(setId: string): Promise<CardSet | false> {
         const setInfoQuery = await db.query(
-            `SELECT (id, setName as "name", setDescription as "description") FROM CCG.Set
+            `SELECT id, setName as "name", setDescription as "description" FROM CCG.Set
             WHERE public = true
               AND id = $1;`,
             [setId]
@@ -74,6 +85,7 @@ class ModdingModel {
             id: info.id,
             name: info.name,
             description: info.description,
+            public: info.public,
             cards: cards
         };
     }
