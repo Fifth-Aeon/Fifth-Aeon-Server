@@ -37,10 +37,7 @@ class ModdingModel {
         )).rows;
     }
 
-    public async insertOrUpdateSet(
-        user: UserData,
-        set: SetInformation
-    ) {
+    public async insertOrUpdateSet(user: UserData, set: SetInformation) {
         if (!(await this.canModifySet(user, set.id))) {
             return false;
         }
@@ -99,6 +96,21 @@ class ModdingModel {
         }
         return db.query(
             `INSERT INTO CCG.SetMembership (setID, cardID) VALUES ($1, $2)`,
+            [setId, cardId]
+        );
+    }
+
+    public async removeCardFromSet(user: UserData, cardId: any, setId: any) {
+        if (
+            !(await this.canModifyCard(user, cardId)) ||
+            !(await this.canModifySet(user, setId))
+        ) {
+            return false;
+        }
+        return db.query(
+            `DELETE FROM CCG.SetMembership WHERE
+                setID = $1,
+                cardID = $2;`,
             [setId, cardId]
         );
     }

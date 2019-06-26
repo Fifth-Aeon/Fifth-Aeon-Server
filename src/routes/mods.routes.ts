@@ -25,7 +25,6 @@ router.post(
     }
 );
 
-// getUserCards
 router.get("/getUserCards", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
@@ -35,7 +34,6 @@ router.get("/getUserCards", passwords.authorize, async (req, res, next) => {
     }
 });
 
-// createSet
 router.post(
     "/insertOrUpdateSet",
     passwords.authorize,
@@ -43,7 +41,10 @@ router.post(
     async (req, res, next) => {
         try {
             const user: UserData = (req as any).user;
-            const result = await moddingModel.insertOrUpdateSet(user, req.body.setInfo);
+            const result = await moddingModel.insertOrUpdateSet(
+                user,
+                req.body.setInfo
+            );
             res.status(result ? 200 : 400).json();
         } catch (e) {
             next(e);
@@ -51,7 +52,6 @@ router.post(
     }
 );
 
-// getPublicSets
 router.get("/publicSets", async (req, res, next) => {
     try {
         res.json(await moddingModel.getPublicSets());
@@ -60,7 +60,6 @@ router.get("/publicSets", async (req, res, next) => {
     }
 });
 
-// getPublicSets
 router.get("/userSets", passwords.authorize, async (req, res, next) => {
     try {
         const user: UserData = (req as any).user;
@@ -70,7 +69,6 @@ router.get("/userSets", passwords.authorize, async (req, res, next) => {
     }
 });
 
-// getPublicSet
 router.get("/publicSet/:setId", async (req, res, next) => {
     try {
         res.json(await moddingModel.getPublicSet(req.params.setId));
@@ -79,7 +77,6 @@ router.get("/publicSet/:setId", async (req, res, next) => {
     }
 });
 
-// addCardToSet
 router.post(
     "/addCardToSet",
     passwords.authorize,
@@ -88,6 +85,25 @@ router.post(
         try {
             const user: UserData = (req as any).user;
             const result = await moddingModel.addCardToSet(
+                user,
+                req.body.cardId,
+                req.body.setId
+            );
+            res.status(result ? 200 : 400).json();
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
+router.post(
+    "/removeCardFromSet",
+    passwords.authorize,
+    validators.requiredAttributes(["cardId", "setId"]),
+    async (req, res, next) => {
+        try {
+            const user: UserData = (req as any).user;
+            const result = await moddingModel.removeCardFromSet(
                 user,
                 req.body.cardId,
                 req.body.setId
