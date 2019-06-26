@@ -55,6 +55,23 @@ class ModdingModel {
         );
     }
 
+    public async getUserCardsInSet(user: UserData) {
+        return (await db.query(
+            `SELECT SM.setID AS "setId", SM.cardID AS "cardId"
+            FROM CCG.Set as ST, CCG.SetMembership as SM
+            WHERE SM.setID = ST.id
+              AND ST.ownerID = $1;`,
+            [user.uid]
+        )).rows;
+    }
+
+    public async deleteSet(user: UserData, setId: any) {
+        if (!(await this.canModifySet(user, setId))) {
+            return false;
+        }
+        return db.query(`DELETE FROM CCG.set WHERE id = $1`, [setId]);
+    }
+
     public async getPublicSets(): Promise<SetInformation[]> {
         return (await db.query(
             `SELECT id, setName as "name", setDescription as "description" FROM CCG.Set
@@ -108,9 +125,9 @@ class ModdingModel {
             return false;
         }
         return db.query(
-            `DELETE FROM CCG.SetMembership WHERE
-                setID = $1,
-                cardID = $2;`,
+            `DELETE FROM CCG.SetMembership 
+             WHERE setID = $1
+               AND cardID = $2;`,
             [setId, cardId]
         );
     }

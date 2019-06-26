@@ -34,6 +34,15 @@ router.get("/getUserCards", passwords.authorize, async (req, res, next) => {
     }
 });
 
+router.get("/getUserSetMemberships", passwords.authorize, async (req, res, next) => {
+    try {
+        const user: UserData = (req as any).user;
+        res.json(await moddingModel.getUserCardsInSet(user));
+    } catch (e) {
+        next(e);
+    }
+});
+
 router.post(
     "/insertOrUpdateSet",
     passwords.authorize,
@@ -78,6 +87,21 @@ router.get("/publicSet/:setId", async (req, res, next) => {
 });
 
 router.post(
+    "/deleteSet",
+    passwords.authorize,
+    validators.requiredAttributes(["setId"]),
+    async (req, res, next) => {
+        try {
+            const user: UserData = (req as any).user;
+            const result = await moddingModel.deleteSet(user, req.body.setId);
+            res.status(result ? 200 : 400).json();
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
+router.post(
     "/addCardToSet",
     passwords.authorize,
     validators.requiredAttributes(["cardId", "setId"]),
@@ -95,6 +119,7 @@ router.post(
         }
     }
 );
+
 
 router.post(
     "/removeCardFromSet",
