@@ -34,14 +34,18 @@ router.get("/getUserCards", passwords.authorize, async (req, res, next) => {
     }
 });
 
-router.get("/getUserSetMemberships", passwords.authorize, async (req, res, next) => {
-    try {
-        const user: UserData = (req as any).user;
-        res.json(await moddingModel.getUserCardsInSet(user));
-    } catch (e) {
-        next(e);
+router.get(
+    "/getUserSetMemberships",
+    passwords.authorize,
+    async (req, res, next) => {
+        try {
+            const user: UserData = (req as any).user;
+            res.json(await moddingModel.getUserCardsInSet(user));
+        } catch (e) {
+            next(e);
+        }
     }
-});
+);
 
 router.post(
     "/insertOrUpdateSet",
@@ -119,7 +123,6 @@ router.post(
         }
     }
 );
-
 
 router.post(
     "/removeCardFromSet",

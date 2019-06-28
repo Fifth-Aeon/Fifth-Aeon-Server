@@ -74,8 +74,10 @@ class ModdingModel {
 
     public async getPublicSets(): Promise<SetInformation[]> {
         return (await db.query(
-            `SELECT id, setName as "name", setDescription as "description" FROM CCG.Set
-            WHERE public = true;`
+            `SELECT id, setName as "name", setDescription as "description", username as "author"
+            FROM CCG.Set, CCG.Account
+            WHERE public = true
+              AND ownerID = accountID;`
         )).rows;
     }
 
@@ -91,9 +93,10 @@ class ModdingModel {
         }
         const info = setInfoQuery.rows[0] as SetInformation;
         const cards = (await db.query(
-            `SELECT (cardData as "cardData") FROM CCG.Card,  CCG.SetMembership as SM
+            `SELECT CR.cardData as "cardData"
+            FROM CCG.Card as CR, CCG.SetMembership as SM
             WHERE SM.setID = $1
-              AND SM.cardID = CCG.Card.cardID;`
+              AND SM.cardID = CR.id;`, [setId]
         )).rows.map(result => result.cardData as CardData);
         return {
             id: info.id,
@@ -125,7 +128,7 @@ class ModdingModel {
             return false;
         }
         return db.query(
-            `DELETE FROM CCG.SetMembership 
+            `DELETE FROM CCG.SetMembership
              WHERE setID = $1
                AND cardID = $2;`,
             [setId, cardId]
