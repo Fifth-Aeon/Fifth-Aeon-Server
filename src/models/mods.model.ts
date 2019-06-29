@@ -4,6 +4,40 @@ import { CardData } from "../game_model/cards/cardList";
 import { SetInformation, CardSet } from "game_model/cardSet";
 
 class ModdingModel {
+    public async getActiveSets(user: UserData) {
+        return (await db.query(
+            `SELECT
+                id,
+                setName as "name",
+                setDescription as "description",
+                array(
+                    SELECT CR.cardData as "cardData"
+                    FROM CCG.Card as CR, CCG.SetMembership as SM
+                    WHERE SM.setID = SA.setID
+                    AND SM.cardID = CR.id) as cards
+            FROM CCG.SetActive as SA, CCG.Set as ST
+            WHERE accountID = $1
+            AND id = setID;`,
+            [user.uid]
+        )).rows as CardSet[];
+    }
+
+    public async deactivateSet(user: UserData, setId: string) {
+        return db.query(
+            `DELETE FROM CCG.SetActive
+            WHERE SetID = $1
+              AND AccountID = $2;`,
+            [setId, user.uid]
+        );
+    }
+
+    public async activateSet(user: UserData, setId: string) {
+        return db.query(
+            `INSERT INTO CCG.SetActive (SetID, AccountID) VALUES ($1, $2);`,
+            [setId, user.uid]
+        );
+    }
+
     public async insertOrUpdateCard(user: UserData, data: CardData) {
         if (!(await this.canModifyCard(user, data.id))) {
             return false;
@@ -96,7 +130,8 @@ class ModdingModel {
             `SELECT CR.cardData as "cardData"
             FROM CCG.Card as CR, CCG.SetMembership as SM
             WHERE SM.setID = $1
-              AND SM.cardID = CR.id;`, [setId]
+              AND SM.cardID = CR.id;`,
+            [setId]
         )).rows.map(result => result.cardData as CardData);
         return {
             id: info.id,

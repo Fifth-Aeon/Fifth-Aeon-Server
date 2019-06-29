@@ -7,6 +7,49 @@ import { moddingModel } from "../models/mods.model";
 
 const router = express.Router();
 
+router.get("/getActiveSets", passwords.authorize, async (req, res, next) => {
+    try {
+        const user: UserData = (req as any).user;
+        const result = await moddingModel.getActiveSets(user);
+        res.status(result ? 200 : 400).json(result);
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.post(
+    "/activateSet",
+    passwords.authorize,
+    validators.requiredAttributes(["setId"]),
+    async (req, res, next) => {
+        try {
+            const user: UserData = (req as any).user;
+            const result = await moddingModel.activateSet(user, req.body.setId);
+            res.status(result ? 200 : 400).json();
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
+router.post(
+    "/deactivateSet",
+    passwords.authorize,
+    validators.requiredAttributes(["setId"]),
+    async (req, res, next) => {
+        try {
+            const user: UserData = (req as any).user;
+            const result = await moddingModel.deactivateSet(
+                user,
+                req.body.setId
+            );
+            res.status(result ? 200 : 400).json();
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
 router.post(
     "/insertOrUpdateCard",
     passwords.authorize,

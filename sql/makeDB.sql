@@ -57,7 +57,13 @@ CREATE TABLE CCG.SetMembership (
     setID       UUID REFERENCES CCG.Set(id) ON DELETE CASCADE,
     cardID      UUID REFERENCES CCG.Card(id) ON DELETE CASCADE,
     PRIMARY KEY (setID, cardID)
-)
+);
+
+CREATE TABLE CCG.SetActive (
+    setID       UUID REFERENCES CCG.Set(id) ON DELETE CASCADE,
+    accountID   INTEGER REFERENCES CCG.Account(accountID) ON DELETE CASCADE,
+    PRIMARY KEY (setID, accountID)
+);
 
 -- A.I Tournament definitons
 CREATE TABLE CCG.AITournament (
