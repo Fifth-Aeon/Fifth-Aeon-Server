@@ -20,6 +20,7 @@ import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
 import { tournamentRouter } from "./routes/tournament.routes";
 import { moddingRouter } from "./routes/mods.routes";
+import { adminRouter } from 'routes/admin.routes';
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;
@@ -79,6 +80,8 @@ export class Server {
         this.app.use("/api/drafts", draftRouter);
         this.app.use("/api/modding", moddingRouter);
         this.app.use("/api/tournament", tournamentRouter);
+        this.app.use("/api/admin", adminRouter);
+
         this.app.get("/report", (req, res) => {
             res.send(this.getReport());
         });
