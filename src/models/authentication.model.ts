@@ -10,10 +10,16 @@ export interface UserData {
     uid: number;
 }
 
+export type UserRole = "guest" | "user" | "mod" | "admin";
+
 export class AuthenticationModel {
     private server?: Server;
 
-    private getAuthenticationResponse(accountID: number, username: string) {
+    private getAuthenticationResponse(
+        accountID: number,
+        username: string,
+        role: UserRole
+    ) {
         if (!this.server) {
             throw new Error(
                 "Authentication model is not connected to a server instance."
@@ -23,19 +29,24 @@ export class AuthenticationModel {
         return {
             token: passwords.createUserToken(accountID),
             mpToken: mpAccount.token,
-            username: username
+            username: username,
+            role: role
         };
     }
 
     public async getUserData(accountID: number) {
         const data = (await db.query(
             `
-            SELECT accountID as "accountID", username
+            SELECT accountID as "accountID", username, role
             FROM CCG.Account
             WHERE accountID = $1;`,
             [accountID]
         )).rows[0];
-        return this.getAuthenticationResponse(data.accountID, data.username);
+        return this.getAuthenticationResponse(
+            data.accountID,
+            data.username,
+            data.role
+        );
     }
 
     public async registerAccount(data: {
@@ -68,7 +79,11 @@ export class AuthenticationModel {
             result.accountID
         );
         await collectionModel.addCollection(result.accountID);
-        return this.getAuthenticationResponse(result.accountID, data.username);
+        return this.getAuthenticationResponse(
+            result.accountID,
+            data.username,
+            "user"
+        );
     }
 
     public async createGuestAccount() {
@@ -90,13 +105,15 @@ export class AuthenticationModel {
         await collectionModel.addCollection(result.accountID, true);
         const authResp = this.getAuthenticationResponse(
             result.accountID,
-            username
+            username,
+            "guest"
         );
         return {
             token: authResp.token,
             mpToken: authResp.mpToken,
             username: authResp.username,
-            password: guestPassword
+            password: guestPassword,
+            role: "guest"
         };
     }
 
@@ -135,13 +152,13 @@ export class AuthenticationModel {
             data.username,
             result.accountID
         );
-        return this.getAuthenticationResponse(result.accountID, data.username);
+        return this.getAuthenticationResponse(result.accountID, data.username, "user");
     }
 
     public async login(usernameOrPassword: string, password: string) {
         const queryResult = await db.query(
             `
-            SELECT password, salt, accountID as "accountID", username
+            SELECT password, salt, accountID as "accountID", username, role
             FROM CCG.Account
             WHERE username = $1
                OR email    = $1; `,
@@ -161,7 +178,8 @@ export class AuthenticationModel {
         }
         return this.getAuthenticationResponse(
             targetUser.accountID,
-            targetUser.username
+            targetUser.username,
+            targetUser.role
         );
     }
 
