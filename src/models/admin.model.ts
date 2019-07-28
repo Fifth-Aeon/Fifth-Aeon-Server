@@ -1,5 +1,4 @@
 import { db } from "../db";
-import { UserData } from "./authentication.model";
 
 export interface AccountData {
     username: string;

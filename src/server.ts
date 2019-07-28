@@ -20,7 +20,7 @@ import { authenticationModel } from "./models/authentication.model";
 import { getToken } from "./tokens";
 import { tournamentRouter } from "./routes/tournament.routes";
 import { moddingRouter } from "./routes/mods.routes";
-import { adminRouter } from 'routes/admin.routes';
+import { adminRouter } from "./routes/admin.routes";
 
 // 1 hour
 const cleaningTime = 1000 * 60 * 60 * 60;

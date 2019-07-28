@@ -1,7 +1,7 @@
 import * as express from "express";
 
 import { passwords } from "../passwords";
-import { adminModel } from "../models/admin.model.ts";
+import { adminModel } from "../models/admin.model";
 
 const router = express.Router();
 
