@@ -90,3 +90,18 @@ CREATE TABLE CCG.SetActive (
     accountID   INTEGER REFERENCES CCG.Account(accountID) ON DELETE CASCADE,
     PRIMARY KEY (setID, accountID)
 );
+
+-- Migrations for account deletion
+alter table CCG.Deck
+drop constraint ccg.deck.deck_accountid_fkey,
+add constraint ccg.deck.deck_accountid_fkey
+   foreign key (accountID)
+   references CCG.Account(accountID)
+   on delete cascade;
+
+alter table CCG.Draft
+drop constraint ccg.draft.draft_accountid_fkey,
+add constraint ccg.draft.draft_accountid_fkey
+   foreign key (accountID)
+   references CCG.Account(accountID)
+   on delete cascade;

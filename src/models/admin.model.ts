@@ -28,6 +28,27 @@ class AdminModel {
           AND M.cardID = C.id;`)).rows[0].count as number;
         return { cardCount, publicCardCount };
     }
+
+    public async getOldAccounts(interval: string = '30 days'): Promise<AccountData[]> {
+        return (await db.query(
+            `SELECT
+                username,
+                role,
+                joined,
+                lastActive as "lastActive"
+            FROM CCG.Account
+            WHERE role = 'guest'
+              AND to_date(lastActive::TEXT,'YYYY-MM-DD') < NOW() - INTERVAL '30 days';`)
+        ).rows;
+    }
+
+    public async deleteOldAccounts(interval: string = '30 days'): Promise<AccountData[]> {
+        return (await db.query(
+            `DELETE FROM CCG.Account
+            WHERE role = 'guest'
+              AND to_date(lastActive::TEXT,'YYYY-MM-DD') < NOW() - INTERVAL '30 days';`)
+        ).rows;
+    }
 }
 
 export const adminModel = new AdminModel();

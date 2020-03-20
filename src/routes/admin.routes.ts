@@ -29,4 +29,29 @@ router.get(
     }
 );
 
+router.get(
+    "/oldAccounts",
+    passwords.authorizeAtLevel("admin"),
+    async (req, res, next) => {
+        try {
+            res.json(await adminModel.getOldAccounts());
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
+router.delete(
+    "/oldAccounts",
+    passwords.authorizeAtLevel("admin"),
+    async (req, res, next) => {
+        try {
+            res.json(await adminModel.deleteOldAccounts());
+        } catch (e) {
+            next(e);
+        }
+    }
+);
+
+
 export const adminRouter = router;

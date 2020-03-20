@@ -25,14 +25,14 @@ CREATE TABLE CCG.Deck (
     deckID              SERIAL PRIMARY KEY,
     accountID           INTEGER,
     deckData            JSON,
-    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID) ON DELETE CASCADE
 );
 
 -- Draft Storage
 CREATE TABLE CCG.Draft (
     accountID INTEGER NOT NULL,
     draftData JSON NOT NULL,
-    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID)
+    FOREIGN KEY (accountID) REFERENCES CCG.Account(accountID) ON DELETE CASCADE
 );
 
 -- Mod Definitions
