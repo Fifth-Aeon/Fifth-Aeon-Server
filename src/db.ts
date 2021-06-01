@@ -3,7 +3,8 @@ import { Pool } from "pg";
 import { config } from "./config";
 
 export const db = new Pool({
-    connectionString: config.connectionString || ""
+    connectionString: config.connectionString || "",
+    ssl: true
 });
 
 export async function startDB() {
